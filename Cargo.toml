@@ -6,5 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-#fltk = "^1.4"
-fltk = { version = "^1.4", git = "https://github.com/fltk-rs/fltk-rs" }
+fltk = "^1.4"
+#fltk = { version = "^1.4", git = "https://github.com/fltk-rs/fltk-rs" }
