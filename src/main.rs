@@ -1,49 +1,40 @@
-use app::channel;
-use fltk::{app, button::Button, frame::Frame, group::Flex, prelude::*, window::Window};
-use fltk::input::MultilineInput;
-use fltk::table::Table;
+use fltk::{app, prelude::*, window};
+use fltk::frame::Frame;
+use fltk::group::{Pack, PackType};
 
 fn main() {
-    let app = app::App::default().with_scheme(app::Scheme::Plastic);
-    let mut wind = Window::default().with_size(100, 200).center_screen().with_label("JSON HAND");
-    let table = Table::default().with_label("table");
-    table.
-    let mut flex = Flex::default().with_size(120, 140).center_of_parent().column();
-    flex.set_margin(30);
-    let mut line1 = Flex::default().column();
-    let input = MultilineInput::default().with_size(1, 2);
-    let mut but_inc = Button::default().with_size(100,30).with_label("+");
-    let mut frame = Frame::default().with_label("0");
-    let mut but_dec = Button::default().with_label("-");
-    line1.end();
-    let mut line2 = Flex::default().column();
-    let b = Button::default().with_label("2");
-    line2.end();
-    flex.end();
-    table.end();
+    let app = app::App::default();
+    let mut wind = window::Window::default().with_size(400, 500).with_label("000000000000000000");
+    // let mut wind = window::Window::new(100, 100, 400, 400, "Multi-Row Multi-Column Layout");
+
+    // 创建一个 4x4 的网格布局
+    let mut group = Pack::new(10, 10, 380, 380, "grid layout");
+    group.set_type(PackType::Horizontal);
+    group.set_spacing(10);
+
+    for _ in 0..4 {
+        let mut row = Pack::new(0, 0, 380, 95, "2222222222222222222");
+        row.set_type(PackType::Vertical);
+        row.set_spacing(10);
+
+        for _ in 0..4 {
+            let mut frame = Frame::new(0, 0, 95, 95, "33333333333333333333");
+            frame.set_color(fltk::enums::Color::from_rgb(
+                rand::random::<u8>(),
+                rand::random::<u8>(),
+                rand::random::<u8>(),
+            ));
+            row.end();
+            row.add(&frame);
+        }
+
+        group.end();
+        group.add(&row);
+    }
+
     wind.end();
     wind.make_resizable(true);
     wind.fullscreen(true);
     wind.show();
-    /* previous counter code */
-    let (s, r) = channel::<Message>();
-
-    but_inc.emit(s, Message::Increment);
-    but_dec.emit(s, Message::Decrement);
-
-    while app.wait() {
-        let label: i32 = frame.label().parse().unwrap();
-        if let Some(msg) = r.recv() {
-            match msg {
-                Message::Increment => frame.set_label(&(label + 1).to_string()),
-                Message::Decrement => frame.set_label(&(label - 1).to_string()),
-            }
-        }
-    }
     app.run().unwrap();
-}
-#[derive(Copy, Clone)]
-enum Message {
-    Increment,
-    Decrement
 }
