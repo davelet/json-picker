@@ -2,7 +2,7 @@ use std::any::Any;
 
 use fltk::{app, prelude::*, window};
 use fltk::app::{Scheme, screen_size};
-use fltk::enums::Color;
+use fltk::enums::{Color, Event};
 use fltk::frame::Frame;
 use fltk::group::{Pack, PackType};
 use fltk::input::MultilineInput;
@@ -21,6 +21,8 @@ fn main() {
     println!("screen {} {}", width, height);
     let width = width as i32;
     let height = height as i32;
+    let (width, height) = (800, 600);
+
     let mut wind = window::Window::default().with_size(width, height).with_label("Multi-Row Multi-Column Layout");
 
     let mut center_layout = Pack::new(0, 0, width, height, "");
@@ -46,7 +48,7 @@ fn main() {
     column_pack.set_spacing(10);
 
     for j in 0..3 {
-        let mut frame = Frame::default().with_size(30, 20).with_label(&*format!("{j} j"));
+        let frame = Frame::default().with_size(30, 20).with_label(&*format!("{j} j"));
         column_pack.end();
         column_pack.add(&frame);
 
@@ -76,7 +78,7 @@ fn main() {
     center_layout.end();
     center_layout.add(&foot.0);
 
-    /// callbacks
+    // callbacks
     input.set_callback(move |inp| {
         foot.1.set_label("Computing");
         let str = serde_json::from_str(&*inp.value());
@@ -92,18 +94,27 @@ fn main() {
         }
         foot.1.set_label(READY);
     });
+    wind.handle(|w, e| {
+        match e {
+            Event::Resize => {
+                println!("w - {} {}", w.width(), w.height());
+                true
+            }
+            _ => {
+                false
+            }
+        }
+    });
+    let x = wind.handle_event(Event::Resize);
+    println!("x = {}", x);
 
     wind.end();
     wind.make_resizable(true);
-    wind.fullscreen(true);
     wind.show();
-    // wind.set_callback(move |_| {
-    //     grid_pack.redraw();
-    // });
     app.run().unwrap();
 }
 
-fn build_lane(mut wind: &mut DoubleWindow) -> (Pack, Frame, Frame, Frame){
+fn build_lane(wind: &mut DoubleWindow) -> (Pack, Frame, Frame, Frame) {
     let mut lane = Pack::default().with_size(wind.width(), HEADER_HEIGHT);
     lane.set_type(PackType::Horizontal);
     let left = Frame::default().with_size(wind.width() / 3, HEADER_HEIGHT);
