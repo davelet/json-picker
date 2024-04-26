@@ -8,15 +8,44 @@ use fltk::{
 
 use crate::logic::json_handle;
 
-pub(crate) struct GridPanel {
+use super::labeled_box::LabeledLine;
+
+// grid panel, a vetical container, includes header, content, footer.
+// pub(crate) struct GridPanel {
+
+// }
+
+/// content panel, a horizontal container, in which there are 3 columns: input part, tree view, and result view
+pub(crate) struct ContentPanel {
     panel: Box<Pack>,
-//     input: Box<MultilineInput>,
-//     tree_view: Box<Pack>,
-//     pretty_json_view: Box<MultilineInput>,
 }
 
-impl GridPanel {
-    pub(crate) fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
+impl ContentPanel {
+    pub(crate) fn new_whole_view(x: i32, y: i32, width: i32, height: i32) -> Self {
+        let mut whole_view = Pack::new(0, 0, width, height, "");
+        whole_view.set_type(PackType::Vertical);
+    
+        let line = LabeledLine::make_header(width);
+        let foot = LabeledLine::init_footer(width);
+        foot.display_size(width, height);
+    
+        whole_view.end();
+        whole_view.add(&*line.content());
+    
+        let double_line_height = line.get_height() + foot.get_height();
+        let grid_pack = ContentPanel::new_content(0, line.get_height(), width, height - double_line_height);
+    
+        whole_view.end();
+        whole_view.add(&*grid_pack.get_panel());
+    
+        whole_view.end();
+        whole_view.add(&*foot.content());
+        ContentPanel {
+            panel: Box::new(whole_view)
+        }
+    }
+
+    pub(crate) fn new_content(x: i32, y: i32, width: i32, height: i32) -> Self {
         let mut grid_pack = Pack::new(x, y, width, height, "");
         grid_pack.set_type(PackType::Horizontal);
         // grid_pack.set_spacing(10);
@@ -62,11 +91,8 @@ impl GridPanel {
             // foot_left.set_label(READY);
         });
 
-        GridPanel {
-            panel: Box::new(grid_pack),
-            // input: Box::new(input),
-            // tree_view: Box::new(column_pack),
-            // pretty_json_view: Box::new(result),
+        ContentPanel {
+            panel: Box::new(grid_pack)
         }
     }
 

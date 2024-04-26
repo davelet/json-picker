@@ -6,6 +6,8 @@ use fltk::prelude::{GroupExt, WidgetExt};
 
 const COLUMN_COUNT: i32 = 3;
 const SIZE_DISPLAY: &str = "Window:";
+const HEADER_HEIGHT: i32 = 20;
+const FOOTER_HEIGHT: i32 = 20;
 
 pub(crate) struct LabeledLine {
     content: Rc<Pack>,
@@ -39,16 +41,16 @@ impl LabeledLine {
         self.children[index].clone()
     }
 
-    pub(crate) fn make_header(width: i32, height: i32) -> Self {
-        let line = Self::new(width, height, COLUMN_COUNT);
+    pub(crate) fn make_header(width: i32) -> Self {
+        let line = Self::new(width, HEADER_HEIGHT, COLUMN_COUNT);
         line.child(0).set_label("input area");
         line.child(1).set_label("structure area");
         line.child(2).set_label("view area");
         line
     }
 
-    pub(crate) fn init_footer(width: i32, height: i32) -> Self {
-        let line = Self::new(width, height, COLUMN_COUNT);
+    pub(crate) fn init_footer(width: i32) -> Self {
+        let line = Self::new(width, FOOTER_HEIGHT, COLUMN_COUNT);
         line.child(0).set_label("Ready");
         line.child(1).set_label("Normal");
         line
