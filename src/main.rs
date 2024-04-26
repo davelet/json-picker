@@ -1,18 +1,19 @@
 use std::any::Any;
 
-use fltk::{app, prelude::*, window};
-use fltk::app::{Scheme, screen_size};
+use fltk::app::Scheme;
 use fltk::enums::{Color, Event};
 use fltk::frame::Frame;
 use fltk::group::{Pack, PackType};
 use fltk::input::MultilineInput;
 use fltk::window::DoubleWindow;
+use fltk::{app, prelude::*, window};
+
 use crate::component::labeled_box::LabeledBox;
 use crate::logic::json_handle;
 
-mod logic;
 mod component;
 mod data;
+mod logic;
 
 const HEADER_HEIGHT: i32 = 20;
 const READY: &str = "Ready";
@@ -26,17 +27,19 @@ fn main() {
     // let height = height as i32;
     let (width, height) = (800, 600);
 
-    let mut wind = window::Window::default().with_size(width, height).with_label("Multi-Row Multi-Column Layout");
+    let mut wind = window::Window::default()
+        .with_size(width, height)
+        .with_label("Multi-Row Multi-Column Layout");
 
     let mut center_layout = Pack::new(0, 0, width, height, "");
     center_layout.set_type(PackType::Vertical);
 
-    let (line, mut input_area, mut structure, mut view_area) = build_lane(&mut wind);
-    input_area.set_label("input area");
-    structure.set_label("structure area");
-    view_area.set_label("view area");
+    let line = LabeledBox::new(wind.width(), HEADER_HEIGHT, 3);
+    line.child(0).set_label("input area");
+    line.child(1).set_label("structure area");
+    line.child(2).set_label("view area");
     center_layout.end();
-    center_layout.add(&line);
+    center_layout.add(&*line.content());
 
     let double_line_height = HEADER_HEIGHT * 2;
     let mut grid_pack = Pack::new(0, HEADER_HEIGHT, width, height - double_line_height, "");
@@ -47,12 +50,16 @@ fn main() {
     grid_pack.end();
     grid_pack.add(&input);
 
-    let mut column_pack = Pack::default().with_size(grid_pack.width() / 3, grid_pack.height()).with_label("");
+    let mut column_pack = Pack::default()
+        .with_size(grid_pack.width() / 3, grid_pack.height())
+        .with_label("");
     column_pack.set_type(PackType::Vertical);
     column_pack.set_spacing(10);
 
     for j in 0..3 {
-        let frame = Frame::default().with_size(30, 20).with_label(&*format!("{j} j"));
+        let frame = Frame::default()
+            .with_size(30, 20)
+            .with_label(&*format!("{j} j"));
         column_pack.end();
         column_pack.add(&frame);
 
@@ -74,41 +81,41 @@ fn main() {
     center_layout.end();
     center_layout.add(&grid_pack);
 
-    let mut foot = build_lane(&mut wind);
-    foot.1.set_label(READY);
-    foot.2.set_label("Normal");
-    foot.3.set_label(&*format!("Screen: {} x {}", width, height));
+    let foot = LabeledBox::new(wind.width(), HEADER_HEIGHT, 3);
+    let mut foot_left = foot.child(0);
+    let mut foot_cent = foot.child(1);
+    let mut foot_righ = foot.child(2);
+    foot_left.set_label(READY);
+    foot_cent.set_label("Normal");
+    foot_righ.set_label(&*format!("Window: {} x {}", width, height));
 
     center_layout.end();
-    center_layout.add(&foot.0);
+    center_layout.add(&*foot.content());
 
     // callbacks
     input.set_callback(move |inp| {
-        foot.1.set_label("Computing");
+        foot_left.set_label("Computing");
         let str = serde_json::from_str(&*inp.value());
         match str {
             Ok(json) => {
                 result.set_value(&*json_handle::pretty_json(&json));
-                foot.2.set_label("Normal");
+                foot_cent.set_label("Normal");
             }
             Err(_) => {
                 result.set_value("");
-                foot.2.set_label("Illegal input");
+                foot_cent.set_label("Illegal input");
             }
         }
-        foot.1.set_label(READY);
+        foot_left.set_label(READY);
     });
-    wind.handle(move |w, e| {
-        match e {
-            Event::Resize => {
-                resize_content(&mut grid_pack, w.width(), w.height());
-                grid_pack.set_size(w.width(), w.height() - double_line_height);
-                true
-            }
-            _ => {
-                false
-            }
+    wind.handle(move |w, e| match e {
+        Event::Resize => {
+            resize_content(&mut grid_pack, w.width(), w.height());
+            grid_pack.set_size(w.width(), w.height() - double_line_height);
+            foot_righ.set_label(&*format!("Window: {} x {}", w.width(), w.height()));
+            true
         }
+        _ => false,
     });
     let x = wind.handle_event(Event::Resize);
     println!("x = {}", x);
@@ -121,22 +128,9 @@ fn main() {
 
 fn resize_content(content: &mut Pack, width: i32, height: i32) {
     let ii = content.children();
-    for i in 0 .. ii {
+    for i in 0..ii {
         if let Some(mut c) = content.child(i) {
             c.set_size(width / 3, height - HEADER_HEIGHT * 2);
         }
-
     }
- }
-
-fn build_lane(wind: &mut DoubleWindow) -> (Pack, Frame, Frame, Frame) {
-    let line = LabeledBox::new(wind.width(), HEADER_HEIGHT, 3);
-
-    let mut lane = Pack::default().with_size(wind.width(), HEADER_HEIGHT);
-    lane.set_type(PackType::Horizontal);
-    let left = Frame::default().with_size(wind.width() / 3, HEADER_HEIGHT);
-    let center = Frame::default().with_size(wind.width() / 3, HEADER_HEIGHT);
-    let right = Frame::default().with_size(wind.width() / 3, HEADER_HEIGHT);
-    lane.end();
-    (lane, left, center, right)
 }
