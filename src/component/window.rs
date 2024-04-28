@@ -1,4 +1,5 @@
-use fltk::{prelude::{GroupExt, WidgetExt}, window::{self, Window}};
+use fltk::{enums::Event, prelude::{GroupExt, WidgetBase, WidgetExt}, window::{self, Window}};
+use crate::component::feature::CustomizedAction;
 
 use super::main_panel::ContentPanel;
 
@@ -12,22 +13,24 @@ impl AppWindow {
 
         let mut wind = window::Window::default()
             .with_size(width, height)
-            .with_label("Multi-Row Multi-Column Layout");
+            .with_label("JSON HAND");
     
-        let mut whole_view = ContentPanel::new_whole_view(0, 0, wind.width(), wind.height());
+        let whole_view = ContentPanel::new_whole_view(0, 0, wind.width(), wind.height());
         let whole_layout = whole_view.get_panel();
     
-        // wind.handle(move |w, e| match e {
-        //     Event::Resize => {
-        //         resize_content(&mut grid_pack.get_panel(), w.width(), w.height());
-        //         grid_pack
-        //             .get_panel()
-        //             .set_size(w.width(), w.height() - double_line_height);
-        //         foot.display_size(w.width(), w.height());
-        //         true
-        //     }
-        //     _ => false,
-        // });
+        // let (s, r) = app::channel();
+        wind.handle(move |w, e| match e {
+            Event::Resize => {
+                whole_view.on_parent_resize(w.width(), w.height());
+        //         // resize_content(&mut grid_pack.get_panel(), w.width(), w.height());
+        //         // grid_pack
+        //         //     .get_panel()
+        //         //     .set_size(w.width(), w.height() - double_line_height);
+        //         // foot.display_size(w.width(), w.height());
+                true
+            }
+            _ => false,
+        });
     
         wind.end();
         AppWindow{window: wind}

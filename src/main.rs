@@ -5,6 +5,7 @@ use fltk::prelude::{GroupExt, WidgetExt};
 
 mod component;
 mod logic;
+mod data;
 
 fn main() {
     let mut app = app::App::default();
@@ -15,6 +16,7 @@ fn main() {
     wind.make_resizable(true);
     wind.show();
     app.run().unwrap();
+
 }
 
 
