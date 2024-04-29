@@ -46,7 +46,6 @@ impl WholeViewPanel {
 
     pub(crate) fn resize_with_ratio(&mut self, width_ratio: f32, height_ratio: f32) {
         let p = *self.get_panel();
-        println!("o = {} {}, n = {} {}", p.width(), p.height(), width_ratio, height_ratio);
         (*self.header).resize_with_ratio(p.width(), p.height(), width_ratio, height_ratio);
         (*self.footer).resize_with_ratio(p.width(), p.height(), width_ratio, height_ratio);
         let margin = self.header.get_height() + self.footer.get_height();
