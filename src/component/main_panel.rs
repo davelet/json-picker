@@ -5,61 +5,31 @@ use fltk::{
     input::MultilineInput,
     prelude::{GroupExt, InputExt, WidgetBase, WidgetExt},
 };
-use crate::component::feature::{CustomizedAction, CustomizedComponent};
-use crate::logic::json_handle;
 
-use super::labeled_box::LabeledLine;
+use crate::data::COLUMN_COUNT;
 
 pub(crate) struct ContentPanel {
     panel: Box<Pack>,
-    cust_elements: Vec<Box<dyn CustomizedComponent>>,
-    widt_elements: Vec<Box<dyn WidgetExt>>,
+    left: Box<MultilineInput>,
+    center: Box<Pack>,
+    right: Box<MultilineInput>,
 }
 
-impl CustomizedComponent for ContentPanel {}
-
 impl ContentPanel {
-    pub(crate) fn new_whole_view(x: i32, y: i32, width: i32, height: i32) -> Self {
-        let mut whole_view = Pack::new(0, 0, width, height, "");
-        whole_view.set_type(PackType::Vertical);
-
-        let line = LabeledLine::make_header(width);
-        let foot = LabeledLine::init_footer(width);
-        foot.display_size(width, height);
-
-        whole_view.end();
-        whole_view.add(&*line.content().borrow_mut());
-
-        let double_line_height = line.get_height() + foot.get_height();
-        let grid_pack = ContentPanel::new_content_view(0, line.get_height(), width, height - double_line_height);
-
-        whole_view.end();
-        whole_view.add(&*grid_pack.get_panel());
-
-        whole_view.end();
-        whole_view.add(&*foot.content().borrow_mut());
-
-        ContentPanel {
-            panel: Box::new(whole_view),
-            cust_elements: vec![Box::new(line), Box::new(grid_pack), Box::new(foot)],
-            widt_elements: vec![],
-        }
-    }
-
     pub(crate) fn new_content_view(x: i32, y: i32, width: i32, height: i32) -> Self {
         let mut grid_pack = Pack::new(x, y, width, height, "");
         grid_pack.set_type(PackType::Horizontal);
         // grid_pack.set_spacing(10);
 
-        let mut input = MultilineInput::default().with_size(width / 3, height);
+        let mut input = MultilineInput::default().with_size(width / COLUMN_COUNT, height);
         grid_pack.end();
         grid_pack.add(&input);
 
-        let mut column_pack = Pack::default().with_size(width / 3, height).with_label("");
+        let mut column_pack = Pack::default().with_size(width / COLUMN_COUNT, height).with_label("");
         column_pack.set_type(PackType::Vertical);
         column_pack.set_spacing(10);
 
-        for j in 0..3 {
+        for j in 0..COLUMN_COUNT {
             let frame = Frame::default()
                 .with_size(30, 20)
                 .with_label(&*format!("{j} j"));
@@ -94,8 +64,9 @@ impl ContentPanel {
 
         ContentPanel {
             panel: Box::new(grid_pack),
-            cust_elements: vec![],
-            widt_elements: vec![Box::new(input), Box::new(column_pack), Box::new(result)],
+            left: Box::new(input),
+            center: Box::new(column_pack),
+            right: Box::new(result),
         }
     }
 
@@ -103,16 +74,8 @@ impl ContentPanel {
         self.panel.clone()
     }
 
-    pub fn cust_elements(&self) -> &Vec<Box<dyn CustomizedComponent>> {
-        &self.cust_elements
-    }
-    pub fn widt_elements(&self) -> &Vec<Box<dyn WidgetExt>> {
-        &self.widt_elements
+    pub(crate) fn resize_with_ratio(&mut self, parent_w: i32, parent_h: i32, ratio_w: f32, ratio_h: f32) {
+        
     }
 }
 
-impl CustomizedAction for ContentPanel {
-    fn on_parent_resize(&self, width: i32, height: i32) {
-        self.get_panel().set_size(width, height);
-    }
-}
