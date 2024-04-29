@@ -5,8 +5,10 @@ use fltk::{
     input::MultilineInput,
     prelude::{GroupExt, InputExt, WidgetBase, WidgetExt},
 };
+use fltk::enums::Event;
 
 use crate::data::COLUMN_COUNT;
+use crate::logic::json_handle;
 
 pub(crate) struct ContentPanel {
     panel: Box<Pack>,
@@ -46,27 +48,35 @@ impl ContentPanel {
         grid_pack.end();
         grid_pack.add(&result);
 
-        // input.set_callback(move |inp| {
-        //     // foot_left.set_label("Computing");
-        //     let str = serde_json::from_str(&*inp.value());
-        //     match str {
-        //         Ok(json) => {
-        //             result.set_value(&*json_handle::pretty_json(&json));
-        //             // foot_cent.set_label("Normal");
-        //         }
-        //         Err(_) => {
-        //             result.set_value("");
-        //             // foot_cent.set_label("Illegal input");
-        //         }
-        //     }
-        //     // foot_left.set_label(READY);
-        // });
+        let mut right = Box::new(result);
+        let mut right_box = right.clone();
+        input.handle(move |i, e|
+            match e {
+                Event::Unfocus => {
+                    // foot_left.set_label("Computing");
+                    let str = serde_json::from_str(&*i.value());
+                    match str {
+                        Ok(json) => {
+                            right_box.set_value(&*json_handle::pretty_json(&json));
+                            // foot_cent.set_label("Normal");
+                        }
+                        Err(_) => {
+                            right_box.set_value("");
+                            // foot_cent.set_label("Illegal input");
+                        }
+                    }
+                    // foot_left.set_label(READY);
+                    true
+                }
+                _ =>
+                    false
+            });
 
         ContentPanel {
             panel: Box::new(grid_pack),
             left: Box::new(input),
             center: Box::new(column_pack),
-            right: Box::new(result),
+            right,
         }
     }
 
