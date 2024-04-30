@@ -18,7 +18,7 @@ impl AppWindow {
             .with_label("JSON HAND");
         wind.size_range(MIN_WIDTH, MIN_HEIGHT, 0, 0);
 
-        let mut whole_view = WholeViewPanel::new_whole_view(0, 0, wind.width(), wind.height());
+        let mut whole_view = WholeViewPanel::new_whole_view(wind.width(), wind.height());
         let whole_layout = whole_view.get_panel();
     
         wind.handle(move |w, e| match e {

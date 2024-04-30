@@ -6,6 +6,8 @@ use fltk::{
     prelude::{GroupExt, InputExt, WidgetBase, WidgetExt},
 };
 use fltk::enums::Event;
+use fltk::tree::Tree;
+use crate::component::structure_tree::JsonStructure;
 
 use crate::data::COLUMN_COUNT;
 use crate::logic::json_handle;
@@ -13,7 +15,7 @@ use crate::logic::json_handle;
 pub(crate) struct ContentPanel {
     panel: Box<Pack>,
     left: Box<MultilineInput>,
-    center: Box<Pack>,
+    center: Box<Tree>,
     right: Box<MultilineInput>,
 }
 
@@ -27,20 +29,11 @@ impl ContentPanel {
         grid_pack.end();
         grid_pack.add(&input);
 
-        let mut column_pack = Pack::default().with_size(width / COLUMN_COUNT, height).with_label("");
-        column_pack.set_type(PackType::Vertical);
-        column_pack.set_spacing(10);
-
-        for j in 0..COLUMN_COUNT {
-            let frame = Frame::default()
-                .with_size(30, 20)
-                .with_label(&*format!("{j} j"));
-            column_pack.end();
-            column_pack.add(&frame);
-        }
+        let mut tree_view = JsonStructure::new(width / COLUMN_COUNT, height);
+        let tree = *tree_view.get_tree();
 
         grid_pack.end();
-        grid_pack.add(&column_pack);
+        grid_pack.add(&tree);
 
         let mut result = MultilineInput::default().with_size(width / 3, height);
         result.set_readonly(true);
@@ -75,7 +68,7 @@ impl ContentPanel {
         ContentPanel {
             panel: Box::new(grid_pack),
             left: Box::new(input),
-            center: Box::new(column_pack),
+            center: Box::new(tree),
             right,
         }
     }

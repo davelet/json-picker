@@ -12,8 +12,8 @@ pub(crate) struct WholeViewPanel {
 }
 
 impl WholeViewPanel {
-    pub(crate) fn new_whole_view(x: i32, y: i32, width: i32, height: i32) -> Self {
-        let mut whole_view = Pack::new(0, 0, width, height, "");
+    pub(crate) fn new_whole_view(width: i32, height: i32) -> Self {
+        let mut whole_view = Pack::default().with_size(width, height);
         whole_view.set_type(PackType::Vertical);
 
         let line = LabeledLine::make_header(width);
