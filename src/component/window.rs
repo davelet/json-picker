@@ -1,19 +1,18 @@
-use std::rc::Rc;
 use fltk::{enums::Event, prelude::{GroupExt, WidgetBase, WidgetExt}, window::{self, Window}};
-use fltk::app::Sender;
+use fltk::app::{Receiver, Sender};
 use fltk::prelude::WindowExt;
 
-use crate::data::{DEFAULT_HEIGHT, DEFAULT_WIDTH, GLOBAL_CHANNEL, MIN_HEIGHT, MIN_WIDTH};
+use crate::data::{DEFAULT_HEIGHT, DEFAULT_WIDTH, MIN_HEIGHT, MIN_WIDTH};
 use crate::data::notify_enum::NotifyType;
 
 use super::border_panel::WholeViewPanel;
 
 pub(crate) struct AppWindow {
-    window: Window
+    window: Window,
 }
 
 impl AppWindow {
-    pub(crate) fn new() -> Self{
+    pub(crate) fn new(s: &Sender<NotifyType>, r: &Receiver<NotifyType>) -> Self{
         let (width, height) = (DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
         let mut wind = window::Window::default()
@@ -35,13 +34,8 @@ impl AppWindow {
                 if height_ratio < 1_f32 {
                     height_ratio = 1_f32;
                 }
-                // let o = GLOBAL_CHANNEL.0.get_mut();
-                // match o {
-                //     None => {}
-                //     Some(s) => {
-                //         (*s).send(NotifyType::Resize(now_width as i32, now_height as i32));
-                //     }
-                // }
+
+                // s.send(NotifyType::Resize(now_width as i32, now_height as i32));
                 whole_view.resize_with_ratio(width_ratio, height_ratio);
                 true
             }
