@@ -13,7 +13,7 @@ fn main() {
     app.set_scheme(Scheme::Plastic);
     let (s, r) = app::channel::<NotifyType>();
 
-    let wind = AppWindow::new(&s, &r);
+    let wind = AppWindow::new(s.clone(), r.clone());
     let mut wind = wind.get_window();
     wind.make_resizable(true);
     wind.show();

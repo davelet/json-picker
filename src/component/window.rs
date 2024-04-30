@@ -1,4 +1,4 @@
-use fltk::{enums::Event, prelude::{GroupExt, WidgetBase, WidgetExt}, window::{self, Window}};
+use fltk::{app, enums::Event, prelude::{GroupExt, WidgetBase, WidgetExt}, window::{self, Window}};
 use fltk::app::{Receiver, Sender};
 use fltk::prelude::WindowExt;
 
@@ -12,7 +12,7 @@ pub(crate) struct AppWindow {
 }
 
 impl AppWindow {
-    pub(crate) fn new(s: &Sender<NotifyType>, r: &Receiver<NotifyType>) -> Self{
+    pub(crate) fn new(s: Sender<NotifyType>, r: Receiver<NotifyType>) -> Self{
         let (width, height) = (DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
         let mut wind = window::Window::default()
@@ -22,7 +22,8 @@ impl AppWindow {
 
         let mut whole_view = WholeViewPanel::new_whole_view(wind.width(), wind.height());
         let _whole_layout = whole_view.get_panel();
-    
+
+        let ss = (s.clone());
         wind.handle(move |w, e| match e {
             Event::Resize => {
                 let (now_width, now_height) = (w.width() as f32, w.height() as f32);
@@ -35,11 +36,23 @@ impl AppWindow {
                     height_ratio = 1_f32;
                 }
 
-                // s.send(NotifyType::Resize(now_width as i32, now_height as i32));
+                // ss.send(NotifyType::Resize(now_width as i32, now_height as i32));
+                // w.emit(ss.clone(), NotifyType::Resize(1, 1));
                 whole_view.resize_with_ratio(width_ratio, height_ratio);
                 true
             }
             _ => false,
+        });
+
+        app::add_idle(move || {
+            if let Some(msg) = r.recv() {
+                match msg {
+                    NotifyType::Resize(i,j) => {
+                        println!("{{adsfas {} {}", i, j);
+                    },
+                    _ => {}
+                }
+            }
         });
     
         wind.end();
