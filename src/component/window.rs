@@ -20,7 +20,7 @@ impl AppWindow {
             .with_label("JSON HAND");
         wind.size_range(MIN_WIDTH, MIN_HEIGHT, 0, 0);
 
-        let mut whole_view = WholeViewPanel::new_whole_view(wind.width(), wind.height());
+        let mut whole_view = WholeViewPanel::new_whole_view(wind.width(), wind.height(), s.clone(), r.clone());
         let _whole_layout = whole_view.get_panel();
 
         let ss = (s.clone());
@@ -36,7 +36,7 @@ impl AppWindow {
                     height_ratio = 1_f32;
                 }
 
-                // ss.send(NotifyType::Resize(now_width as i32, now_height as i32));
+                ss.send(NotifyType::Resize(now_width as i32, now_height as i32));
                 // w.emit(ss.clone(), NotifyType::Resize(1, 1));
                 whole_view.resize_with_ratio(width_ratio, height_ratio);
                 true
