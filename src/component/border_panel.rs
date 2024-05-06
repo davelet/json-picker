@@ -1,5 +1,5 @@
 use fltk::{
-    app::{self, Receiver, Sender}, group::{Pack, PackType}, prelude::{GroupExt, WidgetBase, WidgetExt}
+    app::{self, Receiver, Sender}, group::{Pack, PackType}, prelude::{GroupExt, WidgetBase, WidgetExt},
 };
 use crate::data::notify_enum::NotifyType;
 
@@ -9,7 +9,7 @@ pub(crate) struct WholeViewPanel {
     panel: Box<Pack>,
     header: Box<LabeledLine>,
     footer: Box<LabeledLine>,
-    content: Box<ContentPanel>
+    content: Box<ContentPanel>,
 }
 
 impl WholeViewPanel {
@@ -33,22 +33,11 @@ impl WholeViewPanel {
         whole_view.end();
         whole_view.add(&*foot.content().borrow_mut());
 
-        app::add_idle(move || {
-            if let Some(msg) = r.recv() {
-                match msg {
-                    NotifyType::Resize(i,j) => {
-                        println!("WholeViewPanel {} {}", i, j);
-                    },
-                    _ => {}
-                }
-            }
-        });
-
         WholeViewPanel {
             panel: Box::new(whole_view),
             header: Box::new(line),
             footer: Box::new(foot),
-            content: Box::new(grid_pack)
+            content: Box::new(grid_pack),
         }
     }
 
@@ -56,12 +45,12 @@ impl WholeViewPanel {
         self.panel.clone()
     }
 
-    pub(crate) fn resize_with_ratio(&mut self, width_ratio: f32, height_ratio: f32) {
+    pub(crate) fn resize_with_auto_detect_size(&mut self) {
         let p = *self.get_panel();
-        (*self.header).resize_with_ratio(p.width(), p.height(), width_ratio, height_ratio);
-        (*self.footer).resize_with_ratio(p.width(), p.height(), width_ratio, height_ratio);
+        (*self.header).resize_with_parent_width(p.width());
+        (*self.footer).resize_with_parent_width(p.width());
+        (*self.footer).display_size(p.width(), p.height());
         let margin = self.header.get_height() + self.footer.get_height();
-        (*self.content).resize_with_ratio(p.width(), p.height() - margin, width_ratio, height_ratio);
+        (*self.content).resize_with_parent_size(p.width(), p.height() - margin);
     }
-
 }

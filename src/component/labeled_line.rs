@@ -64,17 +64,15 @@ impl LabeledLine {
     pub(crate) fn get_height(&self) -> i32 {
         self.height
     }
-    
+
     pub(crate) fn display_size(&self, width: i32, height: i32) {
         self.child(2).set_label(&*format!("{SIZE_DISPLAY} {width} x {height}"))
     }
 
-    pub(crate) fn resize_with_ratio(&mut self, parent_w: i32, parent_h: i32, ratio_w: f32, ratio_h: f32) {
-            self.content().borrow_mut().set_size(parent_w, self.height);
-            self.child(0).set_size(parent_w / COLUMN_COUNT, self.height);
-            self.child(1).set_size(parent_w / COLUMN_COUNT, self.height);
-            self.child(2).set_size(parent_w / COLUMN_COUNT, self.height);
-
+    pub(crate) fn resize_with_parent_width(&mut self, parent_w: i32) {
+        self.content().borrow_mut().set_size(parent_w, self.height);
+        self.child(0).set_size(parent_w / COLUMN_COUNT, self.height);
+        self.child(1).set_size(parent_w / COLUMN_COUNT, self.height);
+        self.child(2).set_size(parent_w / COLUMN_COUNT, self.height);
     }
-
 }

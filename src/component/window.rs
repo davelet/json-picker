@@ -23,41 +23,21 @@ impl AppWindow {
         let mut whole_view = WholeViewPanel::new_whole_view(wind.width(), wind.height(), s.clone(), r.clone());
         let _whole_layout = whole_view.get_panel();
 
-        let ss = (s.clone());
+        let ss = s.clone();
         wind.handle(move |w, e| match e {
             Event::Resize => {
-                let (now_width, now_height) = (w.width() as f32, w.height() as f32);
-                let mut width_ratio: f32= now_width / DEFAULT_WIDTH as f32;
-                let mut height_ratio = now_height / DEFAULT_HEIGHT as f32;
-                if width_ratio < 1_f32 {
-                    width_ratio = 1f32;
-                }
-                if height_ratio < 1_f32 {
-                    height_ratio = 1_f32;
-                }
-
-                ss.send(NotifyType::Resize(now_width as i32, now_height as i32));
-                // w.emit(ss.clone(), NotifyType::Resize(1, 1));
-                whole_view.resize_with_ratio(width_ratio, height_ratio);
+                // s.send(NotifyType::Resize(w.width(), w.height()));
+                whole_view.resize_with_auto_detect_size();
                 true
             }
             _ => false,
         });
 
-        app::add_idle(move || {
-            if let Some(msg) = r.recv() {
-                match msg {
-                    NotifyType::Resize(i,j) => {
-                        println!("{{adsfas {} {}", i, j);
-                    },
-                    _ => {}
-                }
-            }
-        });
-    
         wind.end();
         AppWindow{window: wind}
     }
+
+
 
     pub(crate) fn get_window(self) -> Window {
         self.window

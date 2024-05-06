@@ -77,7 +77,7 @@ impl ContentPanel {
         self.panel.clone()
     }
 
-    pub(crate) fn resize_with_ratio(&mut self, parent_w: i32, parent_h: i32, ratio_w: f32, ratio_h: f32) {
+    pub(crate) fn resize_with_parent_size(&mut self, parent_w: i32, parent_h: i32) {
         let mut pack = *self.get_panel();
         pack.set_size(parent_w, parent_h);
         self.left.set_size(parent_w / COLUMN_COUNT, parent_h);
