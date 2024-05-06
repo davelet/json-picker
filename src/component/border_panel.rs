@@ -1,6 +1,8 @@
 use fltk::{
-    group::{Pack, PackType}, prelude::{GroupExt, WidgetExt},
+    app, group::{Pack, PackType}, prelude::{GroupExt, WidgetExt}
 };
+
+use crate::data::notify_enum::NotifyType;
 
 use super::{labeled_line::LabeledLine, main_panel::ContentPanel};
 
@@ -31,6 +33,23 @@ impl WholeViewPanel {
 
         whole_view.end();
         whole_view.add(&*foot.content().borrow_mut());
+
+        app::add_idle(|| {
+            let (s, r) = app::channel::<NotifyType>();
+            let rc = r.recv();
+            match rc {
+                Some(nt) => {
+                    match nt {
+                        NotifyType::Input(t) => {
+                            println!("2342 {t}", )
+                        }
+                        _ => {}
+                    }
+                    
+                }
+                _ => {}
+            }
+        });
 
         WholeViewPanel {
             panel: Box::new(whole_view),

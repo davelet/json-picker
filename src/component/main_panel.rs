@@ -1,12 +1,14 @@
+use crate::component::structure_tree::JsonStructure;
+use crate::data::notify_enum::NotifyType;
+use fltk::app;
+use fltk::enums::Event;
+use fltk::tree::Tree;
 use fltk::{
     enums::Color,
     group::{Pack, PackType},
     input::MultilineInput,
     prelude::{GroupExt, InputExt, WidgetBase, WidgetExt},
 };
-use fltk::enums::Event;
-use fltk::tree::Tree;
-use crate::component::structure_tree::JsonStructure;
 
 use crate::data::COLUMN_COUNT;
 use crate::logic::json_handle;
@@ -19,8 +21,7 @@ pub(crate) struct ContentPanel {
 }
 
 impl ContentPanel {
-    pub(crate) fn new_content_view(
-        width: i32, height: i32) -> Self {
+    pub(crate) fn new_content_view(width: i32, height: i32) -> Self {
         let mut grid_pack = Pack::default().with_size(width, height);
         grid_pack.set_type(PackType::Horizontal);
         // grid_pack.set_spacing(10);
@@ -43,27 +44,32 @@ impl ContentPanel {
 
         let mut right = Box::new(result);
         let mut right_box = right.clone();
-        input.handle(move |i, e|
-            match e {
-                Event::Unfocus => {
-                    // foot_left.set_label("Computing");
-                    let str = serde_json::from_str(&*i.value());
-                    match str {
-                        Ok(json) => {
-                            right_box.set_value(&*json_handle::pretty_json(&json));
-                            // foot_cent.set_label("Normal");
-                        }
-                        Err(_) => {
-                            right_box.set_value("");
-                            // foot_cent.set_label("Illegal input");
-                        }
-                    }
-                    // foot_left.set_label(READY);
-                    true
+        input.handle(move |i, e| match e {
+            Event::Unfocus => {
+                let text = &*i.value();
+                if (text.len() > 10_000_000) {
+                    // foot_cent: too long
+                    return true;
                 }
-                _ =>
-                    false
-            });
+                let (s, _) = app::channel::<NotifyType>();
+                s.send(NotifyType::Input(i.value()));
+                // foot_left.set_label("Computing");
+                let str = serde_json::from_str(text);
+                match str {
+                    Ok(json) => {
+                        right_box.set_value(&*json_handle::pretty_json(&json));
+                        // foot_cent.set_label("Normal");
+                    }
+                    Err(_) => {
+                        right_box.set_value("");
+                        // foot_cent.set_label("Illegal input");
+                    }
+                }
+                // foot_left.set_label(READY);
+                true
+            }
+            _ => false,
+        });
 
         ContentPanel {
             panel: Box::new(grid_pack),
@@ -85,4 +91,3 @@ impl ContentPanel {
         self.right.set_size(parent_w / COLUMN_COUNT, parent_h);
     }
 }
-
