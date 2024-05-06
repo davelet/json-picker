@@ -1,7 +1,6 @@
 use fltk::{
-    app::{self, Receiver, Sender}, group::{Pack, PackType}, prelude::{GroupExt, WidgetBase, WidgetExt},
+    group::{Pack, PackType}, prelude::{GroupExt, WidgetExt},
 };
-use crate::data::notify_enum::NotifyType;
 
 use super::{labeled_line::LabeledLine, main_panel::ContentPanel};
 
@@ -13,7 +12,7 @@ pub(crate) struct WholeViewPanel {
 }
 
 impl WholeViewPanel {
-    pub(crate) fn new_whole_view(width: i32, height: i32, s: Sender<NotifyType>, r: Receiver<NotifyType>) -> Self {
+    pub(crate) fn new_whole_view(width: i32, height: i32) -> Self {
         let mut whole_view = Pack::default().with_size(width, height);
         whole_view.set_type(PackType::Vertical);
 
@@ -25,7 +24,7 @@ impl WholeViewPanel {
         whole_view.add(&*line.content().borrow_mut());
 
         let double_line_height = line.get_height() + foot.get_height();
-        let grid_pack = ContentPanel::new_content_view(0, line.get_height(), width, height - double_line_height);
+        let grid_pack = ContentPanel::new_content_view(width, height - double_line_height);
 
         whole_view.end();
         whole_view.add(&*grid_pack.get_panel());

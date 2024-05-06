@@ -1,9 +1,7 @@
-use fltk::{app, enums::Event, prelude::{GroupExt, WidgetBase, WidgetExt}, window::{self, Window}};
-use fltk::app::{Receiver, Sender};
+use fltk::{enums::Event, prelude::{GroupExt, WidgetBase, WidgetExt}, window::{self, Window}};
 use fltk::prelude::WindowExt;
 
 use crate::data::{DEFAULT_HEIGHT, DEFAULT_WIDTH, MIN_HEIGHT, MIN_WIDTH};
-use crate::data::notify_enum::NotifyType;
 
 use super::border_panel::WholeViewPanel;
 
@@ -12,7 +10,7 @@ pub(crate) struct AppWindow {
 }
 
 impl AppWindow {
-    pub(crate) fn new(s: Sender<NotifyType>, r: Receiver<NotifyType>) -> Self{
+    pub(crate) fn new() -> Self{
         let (width, height) = (DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
         let mut wind = window::Window::default()
@@ -20,10 +18,9 @@ impl AppWindow {
             .with_label("JSON HAND");
         wind.size_range(MIN_WIDTH, MIN_HEIGHT, 0, 0);
 
-        let mut whole_view = WholeViewPanel::new_whole_view(wind.width(), wind.height(), s.clone(), r.clone());
+        let mut whole_view = WholeViewPanel::new_whole_view(wind.width(), wind.height());
         let _whole_layout = whole_view.get_panel();
 
-        let ss = s.clone();
         wind.handle(move |w, e| match e {
             Event::Resize => {
                 // s.send(NotifyType::Resize(w.width(), w.height()));
@@ -36,8 +33,6 @@ impl AppWindow {
         wind.end();
         AppWindow{window: wind}
     }
-
-
 
     pub(crate) fn get_window(self) -> Window {
         self.window

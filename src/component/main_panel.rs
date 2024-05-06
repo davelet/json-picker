@@ -1,6 +1,5 @@
 use fltk::{
     enums::Color,
-    frame::Frame,
     group::{Pack, PackType},
     input::MultilineInput,
     prelude::{GroupExt, InputExt, WidgetBase, WidgetExt},
@@ -20,8 +19,9 @@ pub(crate) struct ContentPanel {
 }
 
 impl ContentPanel {
-    pub(crate) fn new_content_view(x: i32, y: i32, width: i32, height: i32) -> Self {
-        let mut grid_pack = Pack::new(x, y, width, height, "");
+    pub(crate) fn new_content_view(
+        width: i32, height: i32) -> Self {
+        let mut grid_pack = Pack::default().with_size(width, height);
         grid_pack.set_type(PackType::Horizontal);
         // grid_pack.set_spacing(10);
 
