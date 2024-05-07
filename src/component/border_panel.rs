@@ -1,5 +1,8 @@
 use fltk::{
-    app, group::{Pack, PackType}, prelude::{GroupExt, WidgetExt}
+    app,
+    enums::Event,
+    group::{Pack, PackType},
+    prelude::{GroupExt, WidgetBase, WidgetExt},
 };
 
 use crate::data::notify_enum::NotifyType;
@@ -34,19 +37,29 @@ impl WholeViewPanel {
         whole_view.end();
         whole_view.add(&*foot.content().borrow_mut());
 
+        whole_view.handle(|p, event| match event {
+            Event::Resize => {
+                println!("rrrrrr {} {}", p.w(), p.h());
+                // (*self.header).resize_with_parent_width(p.width());
+                // (*self.footer).resize_with_parent_width(p.width());
+                // (*self.footer).display_size(p.width(), p.height());
+                // let margin = self.header.get_height() + self.footer.get_height();
+                // (*self.content).resize_with_parent_size(p.width(), p.height() - margin);
+                true
+            }
+            _ => false,
+        });
+
         app::add_idle(|| {
             let (s, r) = app::channel::<NotifyType>();
             let rc = r.recv();
             match rc {
-                Some(nt) => {
-                    match nt {
-                        NotifyType::Input(t) => {
-                            println!("2342 {t}", )
-                        }
-                        _ => {}
+                Some(nt) => match nt {
+                    NotifyType::Input(t) => {
+                        println!("2342 {t}",)
                     }
-                    
-                }
+                    _ => {}
+                },
                 _ => {}
             }
         });
