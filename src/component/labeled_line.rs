@@ -5,7 +5,7 @@ use fltk::frame::Frame;
 use fltk::group::{Pack, PackType};
 use fltk::prelude::{GroupExt, WidgetExt};
 
-use crate::data::COLUMN_COUNT;
+use crate::data::constants::COLUMN_COUNT;
 
 const SIZE_DISPLAY: &str = "Window:";
 const HEADER_HEIGHT: i32 = 20;
@@ -69,5 +69,9 @@ impl LabeledLine {
         self.child(0).set_size(parent_w / COLUMN_COUNT, self.height);
         self.child(1).set_size(parent_w / COLUMN_COUNT, self.height);
         self.child(2).set_size(parent_w / COLUMN_COUNT, self.height);
+    }
+    
+    pub(crate) fn set_status(&self, st: &str) {
+        self.child(0).set_label(st)
     }
 }

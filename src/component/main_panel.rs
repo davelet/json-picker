@@ -1,6 +1,5 @@
 use crate::component::structure_tree::JsonStructure;
 use crate::data::notify_enum::NotifyType;
-use fltk::app;
 use fltk::enums::Event;
 use fltk::tree::Tree;
 use fltk::{
@@ -10,7 +9,7 @@ use fltk::{
     prelude::{GroupExt, InputExt, WidgetBase, WidgetExt},
 };
 
-use crate::data::{CHANNEL, COLUMN_COUNT};
+use crate::data::constants::{CHANNEL, COLUMN_COUNT};
 use crate::logic::json_handle;
 
 pub(crate) struct ContentPanel {
@@ -52,22 +51,20 @@ impl ContentPanel {
                     return true;
                 }
                 let s = CHANNEL.0.clone();
-                s.send(NotifyType::Status("Computing".to_string()));
-                println!("COmputing");
-                // foot_left.set_label("Computing");
+                s.send(NotifyType::Status("Computing"));
                 let str = serde_json::from_str(text);
                 match str {
                     Ok(json) => {
                         right_box.set_value(&*json_handle::pretty_json(&json));
                         // foot_cent.set_label("Normal");
+                        s.send(NotifyType::Result(""));
                     }
                     Err(_) => {
                         right_box.set_value("");
                         // foot_cent.set_label("Illegal input");
                     }
                 }
-                s.send(NotifyType::Status("Ready".to_string()));
-                println!("Ready");
+                s.send(NotifyType::Status("Ready"));
                 true
             }
             _ => false,

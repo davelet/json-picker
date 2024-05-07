@@ -6,7 +6,7 @@ use fltk::{
     prelude::{GroupExt, WidgetExt},
 };
 
-use crate::data::{notify_enum::NotifyType, CHANNEL};
+use crate::data::{notify_enum::NotifyType, constants::CHANNEL};
 
 use super::{labeled_line::LabeledLine, main_panel::ContentPanel};
 
@@ -48,8 +48,7 @@ impl WholeViewPanel {
                     //     println!("2342 {t}")
                     // }
                     NotifyType::Status(status) => {
-                        // f1.display_size(width, height);
-                        println!("1111 {}", status);
+                        (*f1).set_status(status);
                     }
                     _ => {}
                 }
