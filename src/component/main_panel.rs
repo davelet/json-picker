@@ -9,7 +9,7 @@ use fltk::{
     prelude::{GroupExt, InputExt, WidgetBase, WidgetExt},
 };
 
-use crate::data::constants::{CHANNEL, COLUMN_COUNT, JSON_SIZE_LIMIT};
+use crate::data::constants::{CHANNEL, COLUMN_COUNT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
 use crate::logic::json_handle;
 
 pub(crate) struct ContentPanel {
@@ -46,21 +46,23 @@ impl ContentPanel {
         input.handle(move |i, e| match e {
             Event::Unfocus => {
                 let text = &*i.value();
+                let s = CHANNEL.0.clone();
                 if text.len() > JSON_SIZE_LIMIT { // move to `settinigs`
-                    // foot_cent: too long
+                    s.send(NotifyType::Result(ComputeResult::Error(JSON_SIZE_WARN.to_string())));
                     return true;
                 }
-                let s = CHANNEL.0.clone();
                 s.send(NotifyType::Status(ComputeStatus::Computing));
                 let str = serde_json::from_str(text);
                 match str {
                     Ok(json) => {
+                        tree_view.set_tree(&json);
                         right_box.set_value(&*json_handle::pretty_json(&json));
                         s.send(NotifyType::Result(ComputeResult::Normal));
                     }
-                    Err(e) => {
+                    Err(er) => {
+                        tree_view.clear();
                         right_box.set_value("");
-                        s.send(NotifyType::Result(ComputeResult::Error(e.to_string())));
+                        s.send(NotifyType::Result(ComputeResult::Error(er.to_string())));
                     }
                 }
                 s.send(NotifyType::Status(ComputeStatus::Ready));
