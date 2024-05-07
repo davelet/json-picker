@@ -14,7 +14,6 @@ const FOOTER_HEIGHT: i32 = 20;
 pub(crate) struct LabeledLine {
     content: Rc<RefCell<Pack>>,
     children: Rc<Vec<Box<Frame>>>,
-    width: i32,
     height: i32,
 }
 
@@ -30,7 +29,6 @@ impl LabeledLine {
         LabeledLine {
             content: Rc::new(RefCell::new(pack)),
             children: Rc::new(children),
-            width,
             height,
         }
     }
@@ -39,7 +37,7 @@ impl LabeledLine {
         self.content.clone()
     }
 
-    pub fn child(&self, index: usize) -> Box<Frame> {
+    pub(crate) fn child(&self, index: usize) -> Box<Frame> {
         self.children[index].clone()
     }
 
@@ -58,9 +56,6 @@ impl LabeledLine {
         line
     }
 
-    pub(crate) fn get_width(&self) -> i32 {
-        self.width
-    }
     pub(crate) fn get_height(&self) -> i32 {
         self.height
     }
@@ -69,7 +64,7 @@ impl LabeledLine {
         self.child(2).set_label(&*format!("{SIZE_DISPLAY} {width} x {height}"))
     }
 
-    pub(crate) fn resize_with_parent_width(&mut self, parent_w: i32) {
+    pub(crate) fn resize_with_parent_width(&self, parent_w: i32) {
         self.content().borrow_mut().set_size(parent_w, self.height);
         self.child(0).set_size(parent_w / COLUMN_COUNT, self.height);
         self.child(1).set_size(parent_w / COLUMN_COUNT, self.height);

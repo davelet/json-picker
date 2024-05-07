@@ -30,7 +30,7 @@ impl ContentPanel {
         grid_pack.end();
         grid_pack.add(&input);
 
-        let mut tree_view = JsonStructure::new(width / COLUMN_COUNT, height);
+        let tree_view = JsonStructure::new(width / COLUMN_COUNT, height);
         let tree = *tree_view.get_tree();
 
         grid_pack.end();
@@ -42,17 +42,17 @@ impl ContentPanel {
         grid_pack.end();
         grid_pack.add(&result);
 
-        let mut right = Box::new(result);
+        let right = Box::new(result);
         let mut right_box = right.clone();
         input.handle(move |i, e| match e {
             Event::Unfocus => {
                 let text = &*i.value();
-                if (text.len() > 10_000_000) {
+                if text.len() > 10_000_000 {
                     // foot_cent: too long
                     return true;
                 }
                 let (s, _) = app::channel::<NotifyType>();
-                s.send(NotifyType::Input(i.value()));
+                s.send(NotifyType::Status("Computing".to_string()));
                 // foot_left.set_label("Computing");
                 let str = serde_json::from_str(text);
                 match str {
@@ -65,7 +65,7 @@ impl ContentPanel {
                         // foot_cent.set_label("Illegal input");
                     }
                 }
-                // foot_left.set_label(READY);
+                s.send(NotifyType::Status("Ready".to_string()));
                 true
             }
             _ => false,
