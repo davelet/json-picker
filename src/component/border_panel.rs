@@ -1,4 +1,4 @@
-use std::{borrow::Borrow, rc::Rc};
+use std::rc::Rc;
 
 use fltk::{
     app,
@@ -6,7 +6,7 @@ use fltk::{
     prelude::{GroupExt, WidgetExt},
 };
 
-use crate::data::notify_enum::NotifyType;
+use crate::data::{notify_enum::NotifyType, CHANNEL};
 
 use super::{labeled_line::LabeledLine, main_panel::ContentPanel};
 
@@ -41,16 +41,15 @@ impl WholeViewPanel {
         let footer = Rc::new(foot);
         let f1 = footer.clone();
         app::add_idle(move || {
-            let (_, r) = app::channel::<NotifyType>();
-            let rc = r.recv();
+            let rc = CHANNEL.1.recv();
             match rc {
                 Some(nt) => match nt {
                     // NotifyType::Input(t) => {
                     //     println!("2342 {t}")
                     // }
                     NotifyType::Status(status) => {
-                        f1.display_size(width, height);
-                        print!("{}", status);
+                        // f1.display_size(width, height);
+                        println!("1111 {}", status);
                     }
                     _ => {}
                 }

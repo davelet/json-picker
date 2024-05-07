@@ -10,7 +10,7 @@ use fltk::{
     prelude::{GroupExt, InputExt, WidgetBase, WidgetExt},
 };
 
-use crate::data::COLUMN_COUNT;
+use crate::data::{CHANNEL, COLUMN_COUNT};
 use crate::logic::json_handle;
 
 pub(crate) struct ContentPanel {
@@ -51,8 +51,9 @@ impl ContentPanel {
                     // foot_cent: too long
                     return true;
                 }
-                let (s, _) = app::channel::<NotifyType>();
+                let s = CHANNEL.0.clone();
                 s.send(NotifyType::Status("Computing".to_string()));
+                println!("COmputing");
                 // foot_left.set_label("Computing");
                 let str = serde_json::from_str(text);
                 match str {
@@ -66,6 +67,7 @@ impl ContentPanel {
                     }
                 }
                 s.send(NotifyType::Status("Ready".to_string()));
+                println!("Ready");
                 true
             }
             _ => false,
