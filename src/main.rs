@@ -1,11 +1,13 @@
+use component::window::AppWindow;
+use data::constants::{CHANNEL, START_TIMEOUT};
+use data::notify_enum::{ComputeStatus, NotifyType};
 use fltk::app;
 use fltk::app::Scheme;
 use fltk::prelude::{GroupExt, WidgetExt};
-use component::window::AppWindow;
 
 mod component;
-mod logic;
 mod data;
+mod logic;
 
 fn main() {
     let mut app = app::App::default();
@@ -16,7 +18,9 @@ fn main() {
     wind.make_resizable(true);
     wind.show();
 
-    app.run().unwrap();
+    app::add_timeout3(START_TIMEOUT, |_| {CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));} );
+    let ar = app.run();
+    if let Ok(_) = ar {
+        
+    }
 }
-
-

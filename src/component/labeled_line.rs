@@ -6,6 +6,7 @@ use fltk::group::{Pack, PackType};
 use fltk::prelude::{GroupExt, WidgetExt};
 
 use crate::data::constants::COLUMN_COUNT;
+use crate::data::notify_enum::{ComputeResult, ComputeStatus};
 
 const SIZE_DISPLAY: &str = "Window:";
 const HEADER_HEIGHT: i32 = 20;
@@ -51,8 +52,8 @@ impl LabeledLine {
 
     pub(crate) fn init_footer(width: i32) -> Self {
         let line = Self::new(width, FOOTER_HEIGHT);
-        line.child(0).set_label("Ready");
-        line.child(1).set_label("Normal");
+        line.child(0).set_label(ComputeStatus::Preparing.as_ref());
+        line.child(1).set_label(ComputeResult::Normal.as_ref());
         line
     }
 
@@ -71,7 +72,15 @@ impl LabeledLine {
         self.child(2).set_size(parent_w / COLUMN_COUNT, self.height);
     }
     
-    pub(crate) fn set_status(&self, st: &str) {
-        self.child(0).set_label(st)
+    pub(crate) fn set_status(&self, st: &ComputeStatus) {
+        self.child(0).set_label(st.as_ref())
+    }
+    
+    pub(crate) fn set_result(&self, result: &ComputeResult) {
+        let result = match result {
+            ComputeResult::Normal => {ComputeResult::Normal.as_ref()}
+            ComputeResult::Error(e) => e
+        };
+        self.child(1).set_label(result);
     }
 }

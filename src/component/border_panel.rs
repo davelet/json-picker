@@ -40,15 +40,15 @@ impl WholeViewPanel {
 
         let footer = Rc::new(foot);
         let f1 = footer.clone();
-        app::add_idle(move || {
+        app::add_idle3(move |_| {
             let rc = CHANNEL.1.recv();
             match rc {
                 Some(nt) => match nt {
-                    // NotifyType::Input(t) => {
-                    //     println!("2342 {t}")
-                    // }
                     NotifyType::Status(status) => {
-                        (*f1).set_status(status);
+                        (*f1).set_status(&status);
+                    }
+                    NotifyType::Result(result) => {
+                        (*f1).set_result(&result); 
                     }
                     _ => {}
                 }

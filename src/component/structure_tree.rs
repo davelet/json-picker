@@ -1,4 +1,3 @@
-use fltk::app;
 use fltk::enums::Color;
 use fltk::prelude::WidgetExt;
 use fltk::tree::{Tree, TreeItem, TreeSelect};
@@ -36,6 +35,6 @@ impl JsonStructure {
         self.view.clone()
     }
 
-    pub(crate) fn set_tree() {
-    }
+    // pub(crate) fn set_tree() {
+    // }
 }

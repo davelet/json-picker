@@ -1,5 +1,5 @@
 use crate::component::structure_tree::JsonStructure;
-use crate::data::notify_enum::NotifyType;
+use crate::data::notify_enum::{ComputeResult, ComputeStatus, NotifyType};
 use fltk::enums::Event;
 use fltk::tree::Tree;
 use fltk::{
@@ -9,7 +9,7 @@ use fltk::{
     prelude::{GroupExt, InputExt, WidgetBase, WidgetExt},
 };
 
-use crate::data::constants::{CHANNEL, COLUMN_COUNT};
+use crate::data::constants::{CHANNEL, COLUMN_COUNT, JSON_SIZE_LIMIT};
 use crate::logic::json_handle;
 
 pub(crate) struct ContentPanel {
@@ -46,25 +46,24 @@ impl ContentPanel {
         input.handle(move |i, e| match e {
             Event::Unfocus => {
                 let text = &*i.value();
-                if text.len() > 10_000_000 {
+                if text.len() > JSON_SIZE_LIMIT { // move to `settinigs`
                     // foot_cent: too long
                     return true;
                 }
                 let s = CHANNEL.0.clone();
-                s.send(NotifyType::Status("Computing"));
+                s.send(NotifyType::Status(ComputeStatus::Computing));
                 let str = serde_json::from_str(text);
                 match str {
                     Ok(json) => {
                         right_box.set_value(&*json_handle::pretty_json(&json));
-                        // foot_cent.set_label("Normal");
-                        s.send(NotifyType::Result(""));
+                        s.send(NotifyType::Result(ComputeResult::Normal));
                     }
-                    Err(_) => {
+                    Err(e) => {
                         right_box.set_value("");
-                        // foot_cent.set_label("Illegal input");
+                        s.send(NotifyType::Result(ComputeResult::Error(e.to_string())));
                     }
                 }
-                s.send(NotifyType::Status("Ready"));
+                s.send(NotifyType::Status(ComputeStatus::Ready));
                 true
             }
             _ => false,
