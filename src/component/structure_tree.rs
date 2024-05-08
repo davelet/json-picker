@@ -4,29 +4,20 @@ use fltk::tree::{Tree, TreeItem, TreeSelect};
 use serde_json::Value;
 
 pub(crate) struct JsonStructure {
-    view: Box<Tree>
+    view: Box<Tree>,
 }
 
 impl JsonStructure {
     pub(crate) fn new(w: i32, h: i32) -> Self {
         let mut tree = Tree::default().with_size(w, h);
         tree.set_root_label(".");
+        tree.set_show_root(false);
         tree.set_select_mode(TreeSelect::Multi);
         tree.set_color(Color::Blue);
-        for i in 0 .. 5 {
+        for i in 0..5 {
             let ti = TreeItem::new(&tree, &*("item".to_owned() + &*i.to_string()));
             tree.add_item("2/2/3/1", &ti);
         }
-
-        // for i in 0 .. 5 {
-        //     tree.add(&*("item".to_owned() + &*i.to_string()));
-        // }
-        // tree.add("2");
-        // tree.add("1/2");
-        // tree.add("1/3");
-        // tree.add("1/4");
-        // tree.add("1/4/3");
-        // tree.add("1/4/4");
 
         tree.set_callback(|t| {
             if let Some(items) = t.get_selected_items() {
@@ -46,13 +37,28 @@ impl JsonStructure {
     }
 
     pub(crate) fn set_tree(&self, json: &Value) {
-        
+        let mut tree = self.get_tree();
+        tree.clear();
+        match json {
+            Value::Bool(_) => {tree.add("Boolean");}
+            Value::Number(_) => {tree.add("Number");}
+            Value::String(_) => {tree.add("String");}
+            Value::Array(_) => {tree.add("Array");}
+            Value::Object(map) => {
+                for (ele, v) in map {
+                    tree.add(&*format!("{ele}: {}", v.is_string()));
+                }
+            }
+            _ => {}
+        }
+        // tree.set_root_label(".");
     }
 
     pub(crate) fn clear(&self) {
-        let root = self.get_tree().root();
-        if let Some(root) = root {
-            self.get_tree().clear_children(&root);
-        }
+        // let root = self.get_tree().root();
+        // if let Some(root) = root {
+        //     self.get_tree().clear_children(&root);
+        // }
+        self.get_tree().clear()
     }
 }

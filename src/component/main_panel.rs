@@ -46,8 +46,11 @@ impl ContentPanel {
         input.handle(move |i, e| match e {
             Event::Unfocus => {
                 let text = &*i.value();
+                if text.trim().len() == 0 {
+                    return true;
+                }
                 let s = CHANNEL.0.clone();
-                if text.len() > JSON_SIZE_LIMIT { // move to `settinigs`
+                if text.len() > JSON_SIZE_LIMIT { // move to `settings`
                     s.send(NotifyType::Result(ComputeResult::Error(JSON_SIZE_WARN.to_string())));
                     return true;
                 }
