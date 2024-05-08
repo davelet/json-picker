@@ -50,6 +50,9 @@ impl JsonStructure {
     }
 
     pub(crate) fn clear(&self) {
-        self.get_tree().clear();
+        let root = self.get_tree().root();
+        if let Some(root) = root {
+            self.get_tree().clear_children(&root);
+        }
     }
 }
