@@ -16,10 +16,6 @@ impl JsonStructure {
         tree.set_show_root(false);
         tree.set_select_mode(TreeSelect::Multi);
         tree.set_color(Color::Blue);
-        for i in 0..5 {
-            let ti = TreeItem::new(&tree, &*("item".to_owned() + &*i.to_string()));
-            tree.add_item("2/2/3/1", &ti);
-        }
 
         tree.set_callback(|t| {
             if let Some(items) = t.get_selected_items() {

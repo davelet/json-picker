@@ -8,13 +8,15 @@ use fltk::{
     input::MultilineInput,
     prelude::{GroupExt, InputExt, WidgetBase, WidgetExt},
 };
+use fltk::prelude::DisplayExt;
+use fltk::text::{TextBuffer, TextEditor};
 
 use crate::data::constants::{CHANNEL, COLUMN_COUNT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
 use crate::logic::json_handle;
 
 pub(crate) struct ContentPanel {
     panel: Box<Pack>,
-    left: Box<MultilineInput>,
+    left: Box<TextEditor>,
     center: Box<Tree>,
     right: Box<MultilineInput>,
 }
@@ -25,7 +27,10 @@ impl ContentPanel {
         grid_pack.set_type(PackType::Horizontal);
         // grid_pack.set_spacing(10);
 
-        let mut input = MultilineInput::default().with_size(width / COLUMN_COUNT, height);
+        let mut buf = TextBuffer::default();
+
+        let mut input = TextEditor::default().with_size(width / COLUMN_COUNT, height);
+        input.set_buffer(buf.clone());
         grid_pack.end();
         grid_pack.add(&input);
 
@@ -45,7 +50,7 @@ impl ContentPanel {
         let mut right_box = right.clone();
         input.handle(move |i, e| match e {
             Event::Unfocus => {
-                let text = &*i.value();
+                let text = &*buf.text();
                 if text.trim().len() == 0 {
                     return true;
                 }
