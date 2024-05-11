@@ -3,6 +3,8 @@ use fltk::prelude::WidgetExt;
 use fltk::tree::{Tree, TreeItem, TreeSelect};
 use serde_json::Value;
 
+use crate::logic::json_handle::add_tree_items;
+
 pub(crate) struct JsonStructure {
     view: Box<Tree>,
 }
@@ -39,18 +41,8 @@ impl JsonStructure {
     pub(crate) fn set_tree(&self, json: &Value) {
         let mut tree = self.get_tree();
         tree.clear();
-        match json {
-            Value::Bool(_) => {tree.add("Boolean");}
-            Value::Number(_) => {tree.add("Number");}
-            Value::String(_) => {tree.add("String");}
-            Value::Array(_) => {tree.add("Array");}
-            Value::Object(map) => {
-                for (ele, v) in map {
-                    tree.add(&*format!("{ele}: {}", v.is_string()));
-                }
-            }
-            _ => {}
-        }
+        add_tree_items(&mut tree, json, "/");
+        
         // tree.set_root_label(".");
     }
 
