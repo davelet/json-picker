@@ -41,7 +41,7 @@ impl JsonStructure {
     pub(crate) fn set_tree(&self, json: &Value) {
         let mut tree = self.get_tree();
         tree.clear();
-        add_tree_items(&mut tree, json, "/");
+        add_tree_items(&mut tree, json, String::from("/"));
         
         // tree.set_root_label(".");
     }

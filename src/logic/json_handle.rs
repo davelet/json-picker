@@ -50,30 +50,42 @@ pub fn pretty_json_with_indent(json: &Value, indent: usize) -> String {
     output
 }
 
-pub(crate) fn add_tree_items(tree: &mut Tree, json: &Value, path: &str) {
+pub(crate) fn add_tree_items(tree: &mut Tree, json: &Value, path: String) {
     match json {
-        Value::Bool(_) => {
-            tree.add(&*format!("{path}{}", "Boolean"));
-        }
-        Value::Number(_) => {
-            tree.add(&*format!("{path}{}", "Number"));
-        }
-        Value::String(_) => {
-            tree.add(&*format!("{path}{}", "String"));
+        Value::Bool(_) | Value::Number(_) | Value::String(_) | Value::Null => {
+            tree.add(&*format!("{path}{}", get_enum_name(json)));
         }
         Value::Array(arr) => {
-            tree.add(&*format!("{path}["));
+            tree.add(&*format!("{path}Array["));
             for (i, j) in arr.iter().enumerate() {
-                println!("arr {} {}",i, j);
-                add_tree_items(tree, j, &*format!("{path}[/{}: ", i + 1));
+                add_tree_items(tree, j, format!("{path}Array[/{}: ", i));
             }
             tree.add(&*format!("{path}]"));
         }
         Value::Object(map) => {
+            tree.add(&*format!("{path}Object{{"));
             for (ele, v) in map {
-                tree.add(&*format!("{ele}: {}", v.is_string()));
+                match v {
+                    Value::Bool(_) | Value::Number(_) | Value::String(_) | Value::Null => {
+                        tree.add(&*format!("{path}Object{{/{ele}: {}", get_enum_name(v)));
+                    }
+                    Value::Array(_) | Value::Object(_) => {
+                        add_tree_items(tree, v, format!("{path}Object{{/{ele}: "));
+                    }
+                };
             }
+            tree.add(&*format!("{path}}}"));
         }
-        _ => {}
+    }
+}
+
+fn get_enum_name(json: &Value) -> &str {
+    match json {
+        Value::Null => "Null",
+        Value::Bool(_) => "Boolean",
+        Value::Number(_) => "Number",
+        Value::String(_) => "String",
+        Value::Array(_) => "Array",
+        Value::Object(_) => "Object",
     }
 }
