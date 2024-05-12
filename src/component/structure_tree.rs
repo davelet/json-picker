@@ -1,6 +1,6 @@
 use fltk::enums::Color;
 use fltk::prelude::WidgetExt;
-use fltk::tree::{Tree, TreeItem, TreeSelect};
+use fltk::tree::{Tree, TreeSelect};
 use serde_json::Value;
 
 use crate::logic::json_handle::add_tree_items;
@@ -43,10 +43,10 @@ impl JsonStructure {
     }
 
     pub(crate) fn clear(&self) {
-        // let root = self.get_tree().root();
-        // if let Some(root) = root {
-        //     self.get_tree().clear_children(&root);
-        // }
-        self.get_tree().clear()
+        let root = self.get_tree().root();
+        if let Some(root) = root {
+            self.get_tree().clear_children(&root);
+        }
+        // self.get_tree().clear() // bug as https://github.com/fltk-rs/fltk-rs/issues/1544
     }
 }

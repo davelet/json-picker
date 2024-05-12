@@ -5,11 +5,10 @@ use fltk::tree::Tree;
 use fltk::{
     enums::Color,
     group::{Pack, PackType},
-    input::MultilineInput,
-    prelude::{GroupExt, InputExt, WidgetBase, WidgetExt},
+    prelude::{GroupExt, WidgetBase, WidgetExt},
 };
 use fltk::prelude::DisplayExt;
-use fltk::text::{TextBuffer, TextEditor};
+use fltk::text::{TextBuffer, TextDisplay, TextEditor};
 
 use crate::data::constants::{CHANNEL, COLUMN_COUNT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
 use crate::logic::json_handle;
@@ -18,7 +17,7 @@ pub(crate) struct ContentPanel {
     panel: Box<Pack>,
     left: Box<TextEditor>,
     center: Box<Tree>,
-    right: Box<MultilineInput>,
+    right: Box<TextDisplay>,
 }
 
 impl ContentPanel {
@@ -27,10 +26,8 @@ impl ContentPanel {
         grid_pack.set_type(PackType::Horizontal);
         // grid_pack.set_spacing(10);
 
-        let mut buf = TextBuffer::default();
-
         let mut input = TextEditor::default().with_size(width / COLUMN_COUNT, height);
-        input.set_buffer(buf.clone());
+        input.set_buffer(TextBuffer::default());
         grid_pack.end();
         grid_pack.add(&input);
 
@@ -40,17 +37,20 @@ impl ContentPanel {
         grid_pack.end();
         grid_pack.add(&tree);
 
-        let mut result = MultilineInput::default().with_size(width / 3, height);
-        result.set_readonly(true);
-        result.set_color(Color::Gray0);
+        let mut display = TextBuffer::default();
+        let mut result = TextDisplay::default().with_size(width / 3, height);
+        result.set_buffer(display.clone());
+        result.set_text_color(Color::Blue);
+        // result.set_color(Color::Cyan);
         grid_pack.end();
         grid_pack.add(&result);
 
         let right = Box::new(result);
-        let mut right_box = right.clone();
+        // let right_box = right.clone();
         input.handle(move |i, e| match e {
             Event::Unfocus => {
-                let text = &*buf.text();
+                let buf = i.buffer().unwrap();
+                let text = buf.text();
                 if text.trim().len() == 0 {
                     return true;
                 }
@@ -60,16 +60,16 @@ impl ContentPanel {
                     return true;
                 }
                 s.send(NotifyType::Status(ComputeStatus::Computing));
-                let str = serde_json::from_str(text);
+                let str = serde_json::from_str(&*text);
                 match str {
                     Ok(json) => {
                         tree_view.set_tree(&json);
-                        right_box.set_value(&*json_handle::pretty_json(&json));
+                        display.set_text(&*json_handle::pretty_json(&json));
                         s.send(NotifyType::Result(ComputeResult::Normal));
                     }
                     Err(er) => {
                         tree_view.clear();
-                        right_box.set_value("");
+                        display.set_text("");
                         s.send(NotifyType::Result(ComputeResult::Error(er.to_string())));
                     }
                 }
