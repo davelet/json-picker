@@ -1,6 +1,7 @@
 use fltk::enums::Color;
 use fltk::prelude::WidgetExt;
 use fltk::tree::{Tree, TreeSelect};
+use regex::Regex;
 use serde_json::Value;
 
 use crate::logic::json_handle::add_tree_items;
@@ -20,13 +21,19 @@ impl JsonStructure {
         tree.set_callback(|t| {
             if let Some(items) = t.get_selected_items() {
                 for i in items {
-                    println!("{} selected", t.item_pathname(&i).unwrap());
+                    if let Ok(p) = t.item_pathname(&i) {
+                        println!("{} selected", p);
+                        let re = Regex::new(r"/").unwrap();
+                        if re.is_match(&*p) {
+                            println!("The string contains a slash.");
+                        }
+                    }
                 }
             }
         });
 
         JsonStructure {
-            view: Box::new(tree)
+            view: Box::new(tree),
         }
     }
 
@@ -38,7 +45,7 @@ impl JsonStructure {
         let mut tree = self.get_tree();
         tree.clear();
         add_tree_items(&mut tree, json, String::from("/"));
-        
+
         // tree.set_root_label(".");
     }
 
