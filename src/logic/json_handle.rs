@@ -1,5 +1,7 @@
-use fltk::tree::Tree;
+use fltk::tree::{Tree, TreeItem};
 use serde_json::Value;
+
+use crate::data::stack::Stack;
 
 pub fn pretty_json(json: &Value) -> String {
     pretty_json_with_indent(json, 0)
@@ -88,4 +90,27 @@ fn get_enum_name(json: &Value) -> &str {
         Value::Array(_) => "Array",
         Value::Object(_) => "Object",
     }
+}
+
+pub(crate) fn parse_path_chain<'a>(item: &TreeItem) -> Stack<String> {
+    let mut stack = Stack::new();
+    if item.is_root() {
+        return stack;
+    }
+
+    loop {
+        // let mut temp = ti.parent().unwrap();
+        // if let Some(parent) = temp.parent(){
+        //     if parent.is_root() {
+        //         break;
+        //     }
+        //     if let Some(lable) = temp.label() {
+        //         println!("{lable}");
+        //         stack.push(lable);
+        //     }
+        //     ti = &temp;
+        // } 
+    }
+
+    return stack;
 }

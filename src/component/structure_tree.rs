@@ -4,10 +4,12 @@ use fltk::tree::{Tree, TreeSelect};
 use regex::Regex;
 use serde_json::Value;
 
+use crate::data::constants::CHANNEL;
 use crate::logic::json_handle::add_tree_items;
 
 pub(crate) struct JsonStructure {
     view: Box<Tree>,
+    selected_path: Vec<String>,
 }
 
 impl JsonStructure {
@@ -20,20 +22,29 @@ impl JsonStructure {
 
         tree.set_callback(|t| {
             if let Some(items) = t.get_selected_items() {
+                // let paths = vec![];
                 for i in items {
-                    if let Ok(p) = t.item_pathname(&i) {
-                        println!("{} selected", p);
-                        let re = Regex::new(r"/").unwrap();
-                        if re.is_match(&*p) {
-                            println!("The string contains a slash.");
-                        }
+                    if i.parent().unwrap().is_root() {
+                        println!("root {:?}", i.label());
+                    } else {
+                        println!("not root {:?}", i.label());
                     }
+
+                    // if let Ok(p) = t.item_pathname(&i) {
+                    //     println!("{} selected", p);
+                    //     let re = Regex::new(r"/").unwrap();
+                    //     if re.is_match(&*p) {
+                    //         println!("The string contains a slash.");
+                    //     }
+                    // }
                 }
+                // CHANNEL.0.clone().send(val);
             }
         });
 
         JsonStructure {
             view: Box::new(tree),
+            selected_path: vec![],
         }
     }
 
@@ -55,5 +66,9 @@ impl JsonStructure {
             self.get_tree().clear_children(&root);
         }
         // self.get_tree().clear() // bug as https://github.com/fltk-rs/fltk-rs/issues/1544
+    }
+
+    pub(crate) fn get_selected_path(&self) -> &Vec<String> {
+        return &self.selected_path;
     }
 }

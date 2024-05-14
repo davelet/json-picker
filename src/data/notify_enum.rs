@@ -6,6 +6,7 @@ pub(crate) enum NotifyType {
     Input(String),
     Status(ComputeStatus),
     Result(ComputeResult),
+    SelectedTree(Vec<String>),
 
 }
 
