@@ -5,7 +5,7 @@ use regex::Regex;
 use serde_json::Value;
 
 use crate::data::constants::CHANNEL;
-use crate::logic::json_handle::add_tree_items;
+use crate::logic::json_handle::{add_tree_items, parse_path_chain};
 
 pub(crate) struct JsonStructure {
     view: Box<Tree>,
@@ -24,12 +24,15 @@ impl JsonStructure {
             if let Some(items) = t.get_selected_items() {
                 // let paths = vec![];
                 for i in items {
-                    if i.parent().unwrap().is_root() {
-                        println!("root {:?}", i.label());
-                    } else {
-                        println!("not root {:?}", i.label());
+                    let mut chain = parse_path_chain(&i);
+                    println!("get the resutl");
+                    loop {
+                        let s = chain.pop();
+                        match s {
+                            None => {break}
+                            Some(s1) => {println!("chain = {s1}")}
+                        }
                     }
-
                     // if let Ok(p) = t.item_pathname(&i) {
                     //     println!("{} selected", p);
                     //     let re = Regex::new(r"/").unwrap();

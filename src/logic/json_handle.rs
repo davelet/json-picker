@@ -92,24 +92,24 @@ fn get_enum_name(json: &Value) -> &str {
     }
 }
 
-pub(crate) fn parse_path_chain<'a>(item: &TreeItem) -> Stack<String> {
+pub(crate) fn parse_path_chain(item: &TreeItem) -> Stack<String> {
     let mut stack = Stack::new();
     if item.is_root() {
         return stack;
     }
 
-    loop {
-        // let mut temp = ti.parent().unwrap();
-        // if let Some(parent) = temp.parent(){
-        //     if parent.is_root() {
-        //         break;
-        //     }
-        //     if let Some(lable) = temp.label() {
-        //         println!("{lable}");
-        //         stack.push(lable);
-        //     }
-        //     ti = &temp;
-        // } 
+    let mut temp = Some(item);
+    let mut next;
+    while let Some(node) = temp{
+        if node.is_root() {
+            break;
+        }
+        if let Some(label) = node.label() {
+            println!("{label}");
+            stack.push(label);
+        }
+        next = node.parent().unwrap();
+        temp = Some(&next);
     }
 
     return stack;
