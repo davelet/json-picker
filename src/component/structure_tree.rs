@@ -5,11 +5,11 @@ use regex::Regex;
 use serde_json::Value;
 
 use crate::data::constants::CHANNEL;
+use crate::data::notify_enum::{ComputeStatus, NotifyType};
 use crate::logic::json_handle::{add_tree_items, parse_path_chain};
-
+use chrono::{DateTime, Local, Duration};
 pub(crate) struct JsonStructure {
     view: Box<Tree>,
-    selected_path: Vec<String>,
 }
 
 impl JsonStructure {
@@ -22,16 +22,18 @@ impl JsonStructure {
 
         tree.set_callback(|t| {
             if let Some(items) = t.get_selected_items() {
+                let mut paths = vec![];
                 for i in items {
-                    let mut chain = parse_path_chain(&i);
-                      println!("get the resutl");
-                      loop {
-                          let s = chain.pop();
-                          match s {
-                              None => {break}
-                              Some(s1) => {println!("chain = {s1}")}
-                          }
-                      }
+                    let chain = parse_path_chain(&i);
+                    paths.push(chain);
+                      // println!("get the resutl");
+                      // loop {
+                      //     let s = chain.pop();
+                      //     match s {
+                      //         None => {break}
+                      //         Some(s1) => {println!("chain = {s1}")}
+                      //     }
+                      // }
                     // if let Ok(p) = t.item_pathname(&i) {
                     //     println!("{} selected", p);
                     //     let re = Regex::new(r"/").unwrap();
@@ -40,13 +42,16 @@ impl JsonStructure {
                     //     }
                     // }
                 }
-                // CHANNEL.0.clone().send(val);
+                println!(" selected {}", paths.len());
+                CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Waiting));
+                let now = Local::now();
+                let two_sec_later = now + Duration::seconds(2);
+                CHANNEL.0.clone().send(NotifyType::SelectedTree(paths, two_sec_later));
             }
         });
 
         JsonStructure {
             view: Box::new(tree),
-            selected_path: vec![],
         }
     }
 
@@ -70,7 +75,7 @@ impl JsonStructure {
         // self.get_tree().clear() // bug as https://github.com/fltk-rs/fltk-rs/issues/1544
     }
 
-    pub(crate) fn get_selected_path(&self) -> &Vec<String> {
-        return &self.selected_path;
-    }
+    // pub(crate) fn get_selected_path(&self) -> &Vec<String> {
+    //     return &self.selected_path;
+    // }
 }

@@ -1,4 +1,6 @@
+use chrono::{DateTime, Local};
 use strum::AsRefStr;
+use crate::data::stack::Stack;
 
 #[derive(Clone)]
 pub(crate) enum NotifyType {
@@ -6,13 +8,14 @@ pub(crate) enum NotifyType {
     Input(String),
     Status(ComputeStatus),
     Result(ComputeResult),
-    SelectedTree(Vec<String>),
+    SelectedTree(Vec<Stack<String>>, DateTime<Local>),
 
 }
 
 #[derive(Clone, AsRefStr)]
 pub(crate) enum ComputeStatus {
     Preparing,
+    Waiting,// waiting for user's input continuously, up to 2 seconds
     Computing,
     Ready,
 }
@@ -20,5 +23,5 @@ pub(crate) enum ComputeStatus {
 #[derive(Clone, AsRefStr)]
 pub(crate) enum ComputeResult {
     Normal,
-    Error(String)
+    Error(String),
 }

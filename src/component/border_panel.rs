@@ -50,6 +50,9 @@ impl WholeViewPanel {
                     NotifyType::Result(result) => {
                         (*f1).set_result(&result); 
                     }
+                    NotifyType::SelectedTree(list, upTime) => {
+                        
+                    }
                     _ => {}
                 }
                 _ => {}
