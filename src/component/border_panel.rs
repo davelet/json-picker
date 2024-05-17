@@ -7,6 +7,8 @@ use fltk::{
 };
 
 use crate::data::{notify_enum::NotifyType, constants::CHANNEL};
+use crate::data::notify_enum::ComputeStatus;
+use crate::logic::tasks::{ComputeOnSelectedTask, HaltWaitingStatusTask};
 
 use super::{labeled_line::LabeledLine, main_panel::ContentPanel};
 
@@ -39,23 +41,33 @@ impl WholeViewPanel {
         whole_view.add(&*(*foot.content()).borrow());
 
         let footer = Rc::new(foot);
-        let f1 = footer.clone();
+        let foot_rc = footer.clone();
+        let mut selected_task = ComputeOnSelectedTask::new();
+        let mut halt_waiting_task = HaltWaitingStatusTask::new();
         app::add_idle3(move |_| {
-            let rc = CHANNEL.1.recv();
-            match rc {
-                Some(nt) => match nt {
+            let received_type = CHANNEL.1.recv();
+            if let Some(nt) = received_type {
+                match nt {
                     NotifyType::Status(status) => {
-                        (*f1).set_status(&status);
+                        (*foot_rc).set_status(&status);
+                        match status {
+                            ComputeStatus::Waiting(upTime) => {
+                                halt_waiting_task.set_halt_time(upTime);
+                            }
+                            ComputeStatus::Computing => {
+                                selected_task.compute();
+                            }
+                            _ => {}
+                        }
                     }
                     NotifyType::Result(result) => {
-                        (*f1).set_result(&result); 
+                        (*foot_rc).set_result(&result);
                     }
-                    NotifyType::SelectedTree(list, upTime) => {
-                        
+                    NotifyType::SelectedTree(list) => {
+                        selected_task.setup(list);
                     }
                     _ => {}
                 }
-                _ => {}
             }
         });
 

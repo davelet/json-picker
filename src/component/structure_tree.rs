@@ -43,10 +43,10 @@ impl JsonStructure {
                     // }
                 }
                 println!(" selected {}", paths.len());
-                CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Waiting));
                 let now = Local::now();
                 let two_sec_later = now + Duration::seconds(2);
-                CHANNEL.0.clone().send(NotifyType::SelectedTree(paths, two_sec_later));
+                CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Waiting(two_sec_later)));
+                CHANNEL.0.clone().send(NotifyType::SelectedTree(paths));
             }
         });
 

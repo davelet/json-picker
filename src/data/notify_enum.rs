@@ -8,14 +8,14 @@ pub(crate) enum NotifyType {
     Input(String),
     Status(ComputeStatus),
     Result(ComputeResult),
-    SelectedTree(Vec<Stack<String>>, DateTime<Local>),
+    SelectedTree(Vec<Stack<String>>),
 
 }
 
 #[derive(Clone, AsRefStr)]
 pub(crate) enum ComputeStatus {
     Preparing,
-    Waiting,// waiting for user's input continuously, up to 2 seconds
+    Waiting(DateTime<Local>),// waiting for user's input continuously, up to 2 seconds
     Computing,
     Ready,
 }

@@ -1,6 +1,10 @@
+use std::cell::Cell;
 use std::thread;
+use std::time::Duration;
 use chrono::{DateTime, Local};
 use strum::AsRefStr;
+use crate::data::constants::CHANNEL;
+use crate::data::notify_enum::{ComputeStatus, NotifyType};
 use crate::data::stack::Stack;
 
 #[derive(Clone, AsRefStr)]
@@ -15,7 +19,6 @@ enum TaskStatus {
 pub(crate) struct ComputeOnSelectedTask {
     status: String,
     selected_path: Vec<Stack<String>>,
-    target_time: DateTime<Local>,
 }
 
 impl ComputeOnSelectedTask {
@@ -23,24 +26,53 @@ impl ComputeOnSelectedTask {
         ComputeOnSelectedTask {
             status: TaskStatus::Initialed.as_ref().to_string(),
             selected_path: vec![],
-            target_time: Local::now()
         }
     }
-    pub(crate) fn setup(&mut self, paths: Vec<Stack<String>>, time: DateTime<Local>) {
+    pub(crate) fn setup(&mut self, paths: Vec<Stack<String>>) {
         self.selected_path = paths;
-        self.target_time = time;
     }
 
-    fn exec(&self) {
+    pub(crate) fn compute(&self) {
         thread::spawn(|| {
-            let tt = self.target_time.clone();
-            let diff = self.target_time.signed_duration_since(Local::now());
-            if diff.num_milliseconds() > 0 {
-                thread::sleep_ms(diff.num_milliseconds() as u32);
+        });
+    }
+}
+
+pub(crate) struct HaltWaitingStatusTask {
+    halt_time: DateTime<Local>,
+    update_count: Cell<i32>,
+}
+
+impl HaltWaitingStatusTask {
+    pub(crate) fn new() -> Self {
+        HaltWaitingStatusTask {
+            halt_time: Local::now(),
+            update_count: Cell::new(0),
+        }
+    }
+
+    fn reset(&mut self) {
+        self.halt_time = Local::now();
+    }
+
+    pub(crate) fn set_halt_time(&mut self, time: DateTime<Local>) {
+        let i = self.update_count.get();
+        if self.update_count.get_mut() > &mut 10 { return; } // todo to reset app
+
+        self.halt_time = time;
+        self.update_count.set(i + 1);
+        thread::spawn(move || {
+            let start_time = time;
+            thread::sleep(Duration::from_secs(2));// todo time diff
+
+            if self.update_count.get() > 0 {
+                self.update_count.set(self.update_count.get() - 1);
             }
-            if tt == self.target_time {
-                // 不太好 依赖状态栏，状态栏从 waiting 变为 compute 再计算
+            let end_time = self.halt_time;
+            if end_time != start_time && end_time.gt(&Local::now()) {
+                return;
             }
+            CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Computing));
         });
     }
 }
