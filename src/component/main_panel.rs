@@ -41,7 +41,6 @@ impl ContentPanel {
         let mut result = TextDisplay::default().with_size(width / 3, height);
         result.set_buffer(display.clone());
         result.set_text_color(Color::Blue);
-        // result.set_color(Color::Cyan);
         grid_pack.end();
         grid_pack.add(&result);
 

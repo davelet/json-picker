@@ -53,31 +53,29 @@ pub fn pretty_json_with_indent(json: &Value, indent: usize) -> String {
 }
 
 pub(crate) fn add_tree_items(tree: &mut Tree, json: &Value, path: String) {
+    let sub_path = format!("{path}{}", get_enum_name(json));
+    tree.add(&*sub_path);
     match json {
-        Value::Bool(_) | Value::Number(_) | Value::String(_) | Value::Null => {
-            tree.add(&*format!("{path}{}", get_enum_name(json)));
-        }
         Value::Array(arr) => {
-            tree.add(&*format!("{path}Array["));
             for (i, j) in arr.iter().enumerate() {
-                add_tree_items(tree, j, format!("{path}Array[/{}: ", i));
+                add_tree_items(tree, j, format!("{sub_path}/{}: ", i));
             }
             tree.add(&*format!("{path}]"));
         }
         Value::Object(map) => {
-            tree.add(&*format!("{path}Object{{"));
             for (ele, v) in map {
                 match v {
                     Value::Bool(_) | Value::Number(_) | Value::String(_) | Value::Null => {
-                        tree.add(&*format!("{path}Object{{/{ele}: {}", get_enum_name(v)));
+                        tree.add(&*format!("{sub_path}/{ele}: {}", get_enum_name(v)));
                     }
                     Value::Array(_) | Value::Object(_) => {
-                        add_tree_items(tree, v, format!("{path}Object{{/{ele}: "));
+                        add_tree_items(tree, v, format!("{sub_path}/{ele}: "));
                     }
                 };
             }
             tree.add(&*format!("{path}}}"));
         }
+        _ => {}
     }
 }
 
@@ -87,8 +85,8 @@ fn get_enum_name(json: &Value) -> &str {
         Value::Bool(_) => "Boolean",
         Value::Number(_) => "Number",
         Value::String(_) => "String",
-        Value::Array(_) => "Array",
-        Value::Object(_) => "Object",
+        Value::Array(_) => "[Array",
+        Value::Object(_) => "{Object",
     }
 }
 
@@ -105,7 +103,6 @@ pub(crate) fn parse_path_chain(item: &TreeItem) -> Stack<String> {
             break;
         }
         if let Some(label) = node.label() {
-            println!("{label}");
             stack.push(label);
         }
         next = node.parent().unwrap();
