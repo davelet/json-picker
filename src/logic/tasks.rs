@@ -1,4 +1,4 @@
-use std::cell::Cell;
+use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
 use chrono::{DateTime, Local};
@@ -33,21 +33,20 @@ impl ComputeOnSelectedTask {
     }
 
     pub(crate) fn compute(&self) {
-        thread::spawn(|| {
-        });
+        thread::spawn(|| {});
     }
 }
 
 pub(crate) struct HaltWaitingStatusTask {
     halt_time: DateTime<Local>,
-    update_count: Cell<i32>,
+    update_count: Arc<RwLock<i32>>,
 }
 
 impl HaltWaitingStatusTask {
     pub(crate) fn new() -> Self {
         HaltWaitingStatusTask {
             halt_time: Local::now(),
-            update_count: Cell::new(0),
+            update_count: Arc::new(RwLock::new(0)),
         }
     }
 
@@ -56,23 +55,45 @@ impl HaltWaitingStatusTask {
     }
 
     pub(crate) fn set_halt_time(&mut self, time: DateTime<Local>) {
-        let i = self.update_count.get();
-        if self.update_count.get_mut() > &mut 10 { return; } // todo to reset app
+        let i = self.update_count.write();
+        match i {
+            Err(_) => { return; }
+            Ok(mut i) => {
+                if *i > 10 { return; } // todo to reset app
 
-        self.halt_time = time;
-        self.update_count.set(i + 1);
-        thread::spawn(move || {
-            let start_time = time;
-            thread::sleep(Duration::from_secs(2));// todo time diff
+                self.halt_time = time;
+                *i = *i + 1;
+                let uc =self.update_count.clone();
+                thread::spawn(move || {
+                    let start_time = time;
+                    thread::sleep(Duration::from_secs(2));// todo time diff
 
-            if self.update_count.get() > 0 {
-                self.update_count.set(self.update_count.get() - 1);
+                    let wt_lock = uc.write();
+
+                    // match wt_lock {
+                    //     Err(_) => {
+                    //         // if get lock failed (means the valued locked by another thread), just try to get it and decrease the value
+                    //         thread::spawn(|| {
+                    //             let mut lock = self.update_count.write();
+                    //             while let Err(_) = lock {
+                    //                 lock = self.update_count.write();
+                    //             }
+                    //             let mut i = lock.unwrap();
+                    //             *i = *i - 1;
+                    //         })
+                    //     }
+                    //     Ok(i) => {
+                    //         let c = *i;
+                    //         if c > 0 {c = c - 1; }
+                    //         // let end_time = self.halt_time;
+                    //         // if end_time != start_time && end_time.gt(&Local::now()) {
+                    //         //     return;
+                    //         // }
+                    //         // CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Computing));
+                    //     }
+                    // }
+                });
             }
-            let end_time = self.halt_time;
-            if end_time != start_time && end_time.gt(&Local::now()) {
-                return;
-            }
-            CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Computing));
-        });
+        }
     }
 }
