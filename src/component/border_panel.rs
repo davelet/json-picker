@@ -9,8 +9,7 @@ use fltk::{
 
 use crate::data::notify_enum::ComputeStatus;
 use crate::data::notify_enum::NotifyType;
-use crate::data::singleton::{CHANNEL, STATUS_TASK};
-use crate::logic::tasks::ComputeOnSelectedTask;
+use crate::data::singleton::{CHANNEL, COMPUTE_TASK, STATUS_TASK};
 
 use super::{labeled_line::LabeledLine, main_panel::ContentPanel};
 
@@ -44,8 +43,6 @@ impl WholeViewPanel {
 
         let footer = Rc::new(foot);
         let foot_rc = footer.clone();
-        let mut selected_task = ComputeOnSelectedTask::new();
-        // let mut halt_waiting_task = HaltWaitingStatusTask::new();
         app::add_idle3(move |_| {
             let received_type = CHANNEL.1.recv();
             if let Some(nt) = received_type {
@@ -53,11 +50,15 @@ impl WholeViewPanel {
                     NotifyType::Status(status) => {
                         (*foot_rc).set_status(&status);
                         match status {
-                            ComputeStatus::Waiting(upTime) => {
+                            ComputeStatus::Waiting(upTime, selected_path) => {
                                 let t = STATUS_TASK.0.lock();
                                 if let Ok(mut t) = t {
                                     let set = t.set_halt_time(upTime);
                                     if set {
+                                        let lock = COMPUTE_TASK.lock();
+                                        if let Ok(mut task) = lock {
+                                            task.setup(selected_path);
+                                        }
                                         thread::spawn(move || {
                                             let x = STATUS_TASK.0.lock();
                                             if let Ok(x) = x {
@@ -72,7 +73,10 @@ impl WholeViewPanel {
                                 }
                             }
                             ComputeStatus::Computing => {
-                                selected_task.compute();
+                                let lock = COMPUTE_TASK.lock();
+                                if let Ok(task) = lock {
+                                    task.compute();
+                                }
                             }
                             _ => {}
                         }
@@ -80,9 +84,12 @@ impl WholeViewPanel {
                     NotifyType::Result(result) => {
                         (*foot_rc).set_result(&result);
                     }
-                    NotifyType::SelectedTree(list) => {
-                        selected_task.setup(list);
-                    }
+                    // NotifyType::SelectedTree(list) => {
+                    //     let lock = COMPUTE_TASK.lock();
+                    //     if let Ok(mut task) = lock {
+                    //         task.setup(list);
+                    //     }
+                    // }
                     _ => {}
                 }
             }

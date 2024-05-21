@@ -42,11 +42,10 @@ impl JsonStructure {
                     //     }
                     // }
                 }
-                println!(" selected {}", paths.len());
                 let now = Local::now();
                 let two_sec_later = now + Duration::seconds(2);
-                CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Waiting(two_sec_later)));
-                CHANNEL.0.clone().send(NotifyType::SelectedTree(paths));
+                CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Waiting(two_sec_later, paths)));
+                // CHANNEL.0.clone().send(NotifyType::SelectedTree(paths));
             }
         });
 

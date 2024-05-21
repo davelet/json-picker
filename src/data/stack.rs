@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Stack<T> {
     vec: VecDeque<T>,
 }

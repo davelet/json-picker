@@ -1,4 +1,5 @@
 use chrono::{DateTime, Local};
+use serde_json::Value;
 use strum::AsRefStr;
 use crate::data::stack::Stack;
 
@@ -8,14 +9,14 @@ pub(crate) enum NotifyType {
     Input(String),
     Status(ComputeStatus),
     Result(ComputeResult),
-    SelectedTree(Vec<Stack<String>>),
+    SelectedTree(Value),
 
 }
 
 #[derive(Clone, AsRefStr)]
 pub(crate) enum ComputeStatus {
     Preparing,
-    Waiting(DateTime<Local>),// waiting for user's input continuously, up to 2 seconds
+    Waiting(DateTime<Local>, Vec<Stack<String>>),// waiting for user's input continuously, up to 2 seconds
     Computing,
     Ready,
 }

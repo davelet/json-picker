@@ -2,11 +2,7 @@ use crate::component::structure_tree::JsonStructure;
 use crate::data::notify_enum::{ComputeResult, ComputeStatus, NotifyType};
 use fltk::enums::Event;
 use fltk::tree::Tree;
-use fltk::{
-    enums::Color,
-    group::{Pack, PackType},
-    prelude::{GroupExt, WidgetBase, WidgetExt},
-};
+use fltk::{app, enums::Color, group::{Pack, PackType}, prelude::{GroupExt, WidgetBase, WidgetExt}};
 use fltk::prelude::DisplayExt;
 use fltk::text::{TextBuffer, TextDisplay, TextEditor};
 
@@ -47,6 +43,7 @@ impl ContentPanel {
 
         let right = Box::new(result);
         // let right_box = right.clone();
+        let mut display1 = display.clone();
         input.handle(move |i, e| match e {
             Event::Unfocus => {
                 let buf = i.buffer().unwrap();
@@ -64,12 +61,12 @@ impl ContentPanel {
                 match str {
                     Ok(json) => {
                         tree_view.set_tree(&json);
-                        display.set_text(&*json_handle::pretty_json(&json));
+                        display1.set_text(&*json_handle::pretty_json(&json));
                         s.send(NotifyType::Result(ComputeResult::Normal));
                     }
                     Err(er) => {
                         tree_view.clear();
-                        display.set_text("");
+                        display1.set_text("");
                         s.send(NotifyType::Result(ComputeResult::Error(er.to_string())));
                     }
                 }
@@ -77,6 +74,19 @@ impl ContentPanel {
                 true
             }
             _ => false,
+        });
+        let mut display2 = display.clone();
+        app::add_idle3( move |_| {
+            let received_type = CHANNEL.1.recv();
+            if let Some(nt) = received_type {
+                match nt {
+                    NotifyType::SelectedTree(json) => {
+                        display2.set_text(&*json_handle::pretty_json(&json));
+                        CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Normal));
+                    }
+                    _ => {}
+                }
+            }
         });
 
         ContentPanel {

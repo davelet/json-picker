@@ -2,6 +2,7 @@ use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
 use chrono::{DateTime, Local};
+use serde_json::Value;
 use strum::AsRefStr;
 use crate::data::notify_enum::{ComputeStatus, NotifyType};
 use crate::data::singleton::CHANNEL;
@@ -33,7 +34,11 @@ impl ComputeOnSelectedTask {
     }
 
     pub(crate) fn compute(&self) {
-        thread::spawn(|| {});
+        println!("compute {:?}", &self.selected_path);
+        thread::spawn(|| {
+            CHANNEL.0.clone().send(NotifyType::SelectedTree(Value::Bool(true)));
+            CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
+        });
     }
 }
 
@@ -50,9 +55,9 @@ impl HaltWaitingStatusTask {
         }
     }
 
-    fn reset(&mut self) {
-        self.halt_time = Local::now();
-    }
+    // fn reset(&mut self) {
+    //     self.halt_time = Local::now();
+    // }
 
     pub(crate) fn set_halt_time(&mut self, time: DateTime<Local>) -> bool {
         let i = self.update_count.write();
@@ -70,34 +75,20 @@ impl HaltWaitingStatusTask {
 
     pub(crate) fn exec(&self, time: DateTime<Local>) {
         let arc = self.update_count.clone();
-        // thread::spawn(move || {
         let start_time = time;
         thread::sleep(Duration::from_secs(2));// todo time diff
 
         let wt_lock = arc.write();
         match wt_lock {
-            Err(_) => {
-                // if get lock failed (means the valued locked by another thread), just try to get it and decrease the value
-                // let arc2 = arc.clone();
-                // thread::spawn(move || {
-                //     let mut lock = arc2.write();
-                //     while let Err(_) = lock {
-                //         thread::sleep(Duration::from_millis(1));// hint for sleep
-                //         lock = arc2.write();
-                //     }
-                //     let mut i = lock.unwrap();
-                //     *i = *i - 1;
-                // });
-            }
+            Err(_) => {}
             Ok(mut i) => {
-                if *i > 0 { *i = *i - 1; }
                 let end_time = self.halt_time;
                 if end_time != time && end_time.gt(&Local::now()) {
                     return;
                 }
+                *i = 0;
                 CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Computing));
             }
         }
-        // });
     }
 }
