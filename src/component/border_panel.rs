@@ -9,7 +9,7 @@ use fltk::{
 
 use crate::data::notify_enum::ComputeStatus;
 use crate::data::notify_enum::NotifyType;
-use crate::data::singleton::{CHANNEL, get_status_task};
+use crate::data::singleton::{CHANNEL, STATUS_TASK};
 use crate::logic::tasks::ComputeOnSelectedTask;
 
 use super::{labeled_line::LabeledLine, main_panel::ContentPanel};
@@ -54,12 +54,12 @@ impl WholeViewPanel {
                         (*foot_rc).set_status(&status);
                         match status {
                             ComputeStatus::Waiting(upTime) => {
-                                let t = get_status_task(100);
+                                let t = STATUS_TASK.0.lock();
                                 if let Ok(mut t) = t {
                                     let set = t.set_halt_time(upTime);
                                     if set {
                                         thread::spawn(move || {
-                                            let x = get_status_task(50);
+                                            let x = STATUS_TASK.0.lock();
                                             if let Ok(x) = x {
                                                 x.exec(upTime);
                                             } else {
@@ -68,7 +68,7 @@ impl WholeViewPanel {
                                         });
                                     }
                                 } else {
-                                    println!("failed : timeout") // reset app
+                                    // reset app
                                 }
                             }
                             ComputeStatus::Computing => {

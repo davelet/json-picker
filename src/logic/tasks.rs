@@ -69,31 +69,30 @@ impl HaltWaitingStatusTask {
     }
 
     pub(crate) fn exec(&self, time: DateTime<Local>) {
-        let uc = self.update_count.clone();
+        let arc = self.update_count.clone();
         // thread::spawn(move || {
         let start_time = time;
         thread::sleep(Duration::from_secs(2));// todo time diff
 
-        let arc = uc.clone();
         let wt_lock = arc.write();
         match wt_lock {
             Err(_) => {
                 // if get lock failed (means the valued locked by another thread), just try to get it and decrease the value
-                let arc2 = arc.clone();
-                thread::spawn(move || {
-                    let mut lock = arc2.write();
-                    while let Err(_) = lock {
-                        thread::sleep(Duration::from_millis(1));// hint for sleep
-                        lock = arc2.write();
-                    }
-                    let mut i = lock.unwrap();
-                    *i = *i - 1;
-                });
+                // let arc2 = arc.clone();
+                // thread::spawn(move || {
+                //     let mut lock = arc2.write();
+                //     while let Err(_) = lock {
+                //         thread::sleep(Duration::from_millis(1));// hint for sleep
+                //         lock = arc2.write();
+                //     }
+                //     let mut i = lock.unwrap();
+                //     *i = *i - 1;
+                // });
             }
             Ok(mut i) => {
                 if *i > 0 { *i = *i - 1; }
                 let end_time = self.halt_time;
-                if end_time != start_time && end_time.gt(&Local::now()) {
+                if end_time != time && end_time.gt(&Local::now()) {
                     return;
                 }
                 CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Computing));
