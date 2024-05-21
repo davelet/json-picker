@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use std::thread;
 
 use fltk::{
     app,
@@ -6,9 +7,10 @@ use fltk::{
     prelude::{GroupExt, WidgetExt},
 };
 
-use crate::data::{notify_enum::NotifyType, constants::CHANNEL};
 use crate::data::notify_enum::ComputeStatus;
-use crate::logic::tasks::{ComputeOnSelectedTask, HaltWaitingStatusTask};
+use crate::data::notify_enum::NotifyType;
+use crate::data::singleton::{CHANNEL, get_status_task};
+use crate::logic::tasks::ComputeOnSelectedTask;
 
 use super::{labeled_line::LabeledLine, main_panel::ContentPanel};
 
@@ -43,7 +45,7 @@ impl WholeViewPanel {
         let footer = Rc::new(foot);
         let foot_rc = footer.clone();
         let mut selected_task = ComputeOnSelectedTask::new();
-        let mut halt_waiting_task = HaltWaitingStatusTask::new();
+        // let mut halt_waiting_task = HaltWaitingStatusTask::new();
         app::add_idle3(move |_| {
             let received_type = CHANNEL.1.recv();
             if let Some(nt) = received_type {
@@ -52,7 +54,22 @@ impl WholeViewPanel {
                         (*foot_rc).set_status(&status);
                         match status {
                             ComputeStatus::Waiting(upTime) => {
-                                halt_waiting_task.set_halt_time(upTime);
+                                let t = get_status_task(100);
+                                if let Ok(mut t) = t {
+                                    let set = t.set_halt_time(upTime);
+                                    if set {
+                                        thread::spawn(move || {
+                                            let x = get_status_task(50);
+                                            if let Ok(x) = x {
+                                                x.exec(upTime);
+                                            } else {
+                                                // reset app
+                                            }
+                                        });
+                                    }
+                                } else {
+                                    println!("failed : timeout") // reset app
+                                }
                             }
                             ComputeStatus::Computing => {
                                 selected_task.compute();

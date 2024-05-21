@@ -1,13 +1,13 @@
+use chrono::{Duration, Local};
 use fltk::enums::Color;
 use fltk::prelude::WidgetExt;
 use fltk::tree::{Tree, TreeSelect};
-use regex::Regex;
 use serde_json::Value;
 
-use crate::data::constants::CHANNEL;
 use crate::data::notify_enum::{ComputeStatus, NotifyType};
+use crate::data::singleton::CHANNEL;
 use crate::logic::json_handle::{add_tree_items, parse_path_chain};
-use chrono::{DateTime, Local, Duration};
+
 pub(crate) struct JsonStructure {
     view: Box<Tree>,
 }

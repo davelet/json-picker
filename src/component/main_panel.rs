@@ -10,7 +10,8 @@ use fltk::{
 use fltk::prelude::DisplayExt;
 use fltk::text::{TextBuffer, TextDisplay, TextEditor};
 
-use crate::data::constants::{CHANNEL, COLUMN_COUNT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
+use crate::data::constants::{COLUMN_COUNT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
+use crate::data::singleton::CHANNEL;
 use crate::logic::json_handle;
 
 pub(crate) struct ContentPanel {

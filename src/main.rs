@@ -1,9 +1,10 @@
 use component::window::AppWindow;
-use data::constants::{CHANNEL, START_TIMEOUT};
+use data::constants::{START_TIMEOUT};
 use data::notify_enum::{ComputeStatus, NotifyType};
 use fltk::app;
 use fltk::app::Scheme;
 use fltk::prelude::{GroupExt, WidgetExt};
+use crate::data::singleton::CHANNEL;
 
 mod component;
 mod data;
