@@ -5,7 +5,7 @@ use chrono::{DateTime, Local};
 use serde_json::Value;
 use strum::AsRefStr;
 use crate::data::notify_enum::{ComputeStatus, NotifyType};
-use crate::data::singleton::CHANNEL;
+use crate::data::singleton::{CHANNEL, GLOBAL_JSON};
 use crate::data::stack::Stack;
 
 #[derive(Clone, AsRefStr)]
@@ -34,10 +34,28 @@ impl ComputeOnSelectedTask {
     }
 
     pub(crate) fn compute(&self) {
-        println!("compute {:?}", &self.selected_path);
         thread::spawn(|| {
+            println!("start >>>>>>>>>> ");
+            let cp = self.selected_path.clone();
+            for p in cp {
+                println!("selected {p}");
+            }
+            println!("end <<<<<<<<<<< ");
+            let mut json = GLOBAL_JSON.lock().unwrap().get_mut().clone();
+            if self.selected_path.len() > 0 {
+                let mut path = &self.selected_path[0];
+                let mut c = path.pop();
+                while let Some(ref n) = c {
+                    match json {
+                        Value::Object(ref j) => {
+                            json = *j.get(n).unwrap();
+                        }
+                        _ => {}
+                    }
+                    c = path.pop();
+                }
+            }
             CHANNEL.0.clone().send(NotifyType::SelectedTree(Value::Bool(true)));
-            CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
         });
     }
 }

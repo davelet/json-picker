@@ -50,10 +50,10 @@ impl WholeViewPanel {
                     NotifyType::Status(status) => {
                         (*foot_rc).set_status(&status);
                         match status {
-                            ComputeStatus::Waiting(upTime, selected_path) => {
+                            ComputeStatus::Waiting(up_time, selected_path) => {
                                 let t = STATUS_TASK.0.lock();
                                 if let Ok(mut t) = t {
-                                    let set = t.set_halt_time(upTime);
+                                    let set = t.set_halt_time(up_time);
                                     if set {
                                         let lock = COMPUTE_TASK.lock();
                                         if let Ok(mut task) = lock {
@@ -62,7 +62,7 @@ impl WholeViewPanel {
                                         thread::spawn(move || {
                                             let x = STATUS_TASK.0.lock();
                                             if let Ok(x) = x {
-                                                x.exec(upTime);
+                                                x.exec(up_time);
                                             } else {
                                                 // reset app
                                             }
@@ -84,12 +84,6 @@ impl WholeViewPanel {
                     NotifyType::Result(result) => {
                         (*foot_rc).set_result(&result);
                     }
-                    // NotifyType::SelectedTree(list) => {
-                    //     let lock = COMPUTE_TASK.lock();
-                    //     if let Ok(mut task) = lock {
-                    //         task.setup(list);
-                    //     }
-                    // }
                     _ => {}
                 }
             }

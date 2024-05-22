@@ -7,7 +7,7 @@ use fltk::prelude::DisplayExt;
 use fltk::text::{TextBuffer, TextDisplay, TextEditor};
 
 use crate::data::constants::{COLUMN_COUNT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
-use crate::data::singleton::CHANNEL;
+use crate::data::singleton::{CHANNEL, GLOBAL_JSON};
 use crate::logic::json_handle;
 
 pub(crate) struct ContentPanel {
@@ -60,6 +60,7 @@ impl ContentPanel {
                 let str = serde_json::from_str(&*text);
                 match str {
                     Ok(json) => {
+                        GLOBAL_JSON.lock().unwrap().set(json.clone());
                         tree_view.set_tree(&json);
                         display1.set_text(&*json_handle::pretty_json(&json));
                         s.send(NotifyType::Result(ComputeResult::Normal));
@@ -83,6 +84,7 @@ impl ContentPanel {
                     NotifyType::SelectedTree(json) => {
                         display2.set_text(&*json_handle::pretty_json(&json));
                         CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Normal));
+                        CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
                     }
                     _ => {}
                 }
