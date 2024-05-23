@@ -30,32 +30,39 @@ impl ComputeOnSelectedTask {
         }
     }
     pub(crate) fn setup(&mut self, paths: Vec<Stack<String>>) {
+        println!("selected from {} to {}", self.selected_path.len(), paths.len());
         self.selected_path = paths;
     }
 
     pub(crate) fn compute(&self) {
-        thread::spawn(|| {
+        let mut cp = self.selected_path.clone();
+        println!("compute selected {}", cp.len());
+        if cp.len() == 0 { return; }
+        thread::spawn(move || {
             println!("start >>>>>>>>>> ");
-            let cp = self.selected_path.clone();
-            for p in cp {
+            for p in &cp {
                 println!("selected {p}");
             }
             println!("end <<<<<<<<<<< ");
-            let mut json = GLOBAL_JSON.lock().unwrap().get_mut().clone();
-            if self.selected_path.len() > 0 {
-                let mut path = &self.selected_path[0];
+            let mut guard = GLOBAL_JSON.lock().unwrap();
+            let mut json = (*guard).get_mut().clone();
+            if cp.len() > 0 {
+                let mut path = &mut cp[0];
                 let mut c = path.pop();
                 while let Some(ref n) = c {
                     match json {
                         Value::Object(ref j) => {
-                            json = *j.get(n).unwrap();
+                            let np = j.get(n);
+                            if let Some(vv) = np {
+                                json = (*vv).clone();
+                            }
                         }
                         _ => {}
                     }
                     c = path.pop();
                 }
             }
-            CHANNEL.0.clone().send(NotifyType::SelectedTree(Value::Bool(true)));
+            CHANNEL.0.clone().send(NotifyType::SelectedTree(json));
         });
     }
 }
@@ -93,7 +100,6 @@ impl HaltWaitingStatusTask {
 
     pub(crate) fn exec(&self, time: DateTime<Local>) {
         let arc = self.update_count.clone();
-        let start_time = time;
         thread::sleep(Duration::from_secs(2));// todo time diff
 
         let wt_lock = arc.write();
@@ -101,6 +107,7 @@ impl HaltWaitingStatusTask {
             Err(_) => {}
             Ok(mut i) => {
                 let end_time = self.halt_time;
+                println!("execute time from {} {}", &end_time, &time);
                 if end_time != time && end_time.gt(&Local::now()) {
                     return;
                 }

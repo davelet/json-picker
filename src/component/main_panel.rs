@@ -5,6 +5,7 @@ use fltk::tree::Tree;
 use fltk::{app, enums::Color, group::{Pack, PackType}, prelude::{GroupExt, WidgetBase, WidgetExt}};
 use fltk::prelude::DisplayExt;
 use fltk::text::{TextBuffer, TextDisplay, TextEditor};
+use serde_json::Value;
 
 use crate::data::constants::{COLUMN_COUNT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
 use crate::data::singleton::{CHANNEL, GLOBAL_JSON};
@@ -44,44 +45,48 @@ impl ContentPanel {
         let right = Box::new(result);
         // let right_box = right.clone();
         let mut display1 = display.clone();
-        input.handle(move |i, e| match e {
-            Event::Unfocus => {
-                let buf = i.buffer().unwrap();
-                let text = buf.text();
-                if text.trim().len() == 0 {
-                    return true;
-                }
-                let s = CHANNEL.0.clone();
-                if text.len() > JSON_SIZE_LIMIT { // move to `settings`
-                    s.send(NotifyType::Result(ComputeResult::Error(JSON_SIZE_WARN.to_string())));
-                    return true;
-                }
-                s.send(NotifyType::Status(ComputeStatus::Computing));
-                let str = serde_json::from_str(&*text);
-                match str {
-                    Ok(json) => {
-                        GLOBAL_JSON.lock().unwrap().set(json.clone());
-                        tree_view.set_tree(&json);
-                        display1.set_text(&*json_handle::pretty_json(&json));
-                        s.send(NotifyType::Result(ComputeResult::Normal));
+        input.handle(move |i, e| {
+            match e {
+                Event::Unfocus => {
+                    let buf = i.buffer().unwrap();
+                    let text = buf.text();
+                    if text.trim().len() == 0 {
+                        return true;
                     }
-                    Err(er) => {
-                        tree_view.clear();
-                        display1.set_text("");
-                        s.send(NotifyType::Result(ComputeResult::Error(er.to_string())));
+                    let s = CHANNEL.0.clone();
+                    if text.len() > JSON_SIZE_LIMIT { // move to `settings`
+                        s.send(NotifyType::Result(ComputeResult::Error(JSON_SIZE_WARN.to_string())));
+                        return true;
                     }
+                    s.send(NotifyType::Status(ComputeStatus::Computing));
+                    let str = serde_json::from_str::<Value>(&*text);
+                    match str {
+                        Ok(json) => {
+                            let guard = GLOBAL_JSON.lock().unwrap();
+                            (*guard).set(json.clone());
+                            tree_view.set_tree(&json);
+                            display1.set_text(&*json_handle::pretty_json(&json));
+                            s.send(NotifyType::Result(ComputeResult::Normal));
+                        }
+                        Err(er) => {
+                            tree_view.clear();
+                            display1.set_text("");
+                            s.send(NotifyType::Result(ComputeResult::Error(er.to_string())));
+                        }
+                    }
+                    s.send(NotifyType::Status(ComputeStatus::Ready));
+                    true
                 }
-                s.send(NotifyType::Status(ComputeStatus::Ready));
-                true
+                _ => false,
             }
-            _ => false,
         });
         let mut display2 = display.clone();
-        app::add_idle3( move |_| {
+        app::add_idle3(move |_| {
             let received_type = CHANNEL.1.recv();
             if let Some(nt) = received_type {
                 match nt {
                     NotifyType::SelectedTree(json) => {
+                        println!("rev: selected tree");
                         display2.set_text(&*json_handle::pretty_json(&json));
                         CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Normal));
                         CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));

@@ -15,7 +15,7 @@ lazy_static = "1.4"
 strum = { version = "0.26", features = ["derive"] }
 regex = "1.10.4"
 chrono = "0.4.38"
-tokio = { version = "1", features = ["full", "sync", "time"] }
+#tokio = { version = "1", features = ["full", "sync", "time"] }
 
 # [patch.crates-io]
 # fltk = { git = "https://github.com/fltk-rs/fltk-rs" } # https://github.com/fltk-rs/fltk-rs/issues/1544

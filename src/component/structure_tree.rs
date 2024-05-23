@@ -28,6 +28,7 @@ impl JsonStructure {
                 }
                 let now = Local::now();
                 let two_sec_later = now + Duration::seconds(2);
+                println!("selected size {}", paths.len());
                 CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Waiting(two_sec_later, paths)));
             }
         });

@@ -1,4 +1,4 @@
-pub(crate) const APP_NAME: &str = "JSON HAND";
+pub(crate) const APP_NAME: &str = "JSON PICKER";
 pub(crate) const DEFAULT_WIDTH: i32 = 800;
 pub(crate) const DEFAULT_HEIGHT: i32 = 600;
 pub(crate) const MIN_WIDTH: i32 = 800;
