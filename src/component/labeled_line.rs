@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
 use fltk::frame::Frame;
 use fltk::group::{Pack, PackType};
@@ -13,8 +13,8 @@ const HEADER_HEIGHT: i32 = 20;
 const FOOTER_HEIGHT: i32 = 20;
 
 pub(crate) struct LabeledLine {
-    content: Rc<RefCell<Pack>>,
-    children: Rc<Vec<Box<Frame>>>,
+    content: Arc<Mutex<Pack>>,
+    children: Arc<Vec<Box<Frame>>>,
     height: i32,
 }
 
@@ -28,13 +28,13 @@ impl LabeledLine {
         pack.end();
         let children = vec![Box::new(left), Box::new(center), Box::new(right)];
         LabeledLine {
-            content: Rc::new(RefCell::new(pack)),
-            children: Rc::new(children),
+            content: Arc::new(Mutex::new(pack)),
+            children: Arc::new(children),
             height,
         }
     }
 
-    pub(crate) fn content(&self) -> Rc<RefCell<Pack>> {
+    pub(crate) fn content(&self) -> Arc<Mutex<Pack>> {
         self.content.clone()
     }
 
@@ -66,7 +66,7 @@ impl LabeledLine {
     }
 
     pub(crate) fn resize_with_parent_width(&self, parent_w: i32) {
-        self.content().borrow_mut().set_size(parent_w, self.height);
+        self.content().lock().unwrap().set_size(parent_w, self.height);
         self.child(0).set_size(parent_w / COLUMN_COUNT, self.height);
         self.child(1).set_size(parent_w / COLUMN_COUNT, self.height);
         self.child(2).set_size(parent_w / COLUMN_COUNT, self.height);

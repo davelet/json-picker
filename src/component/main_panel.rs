@@ -19,7 +19,7 @@ pub(crate) struct ContentPanel {
 }
 
 impl ContentPanel {
-    pub(crate) fn new_content_view(width: i32, height: i32) -> Self {
+    pub(crate) fn new(width: i32, height: i32) -> Self {
         let mut grid_pack = Pack::default().with_size(width, height);
         grid_pack.set_type(PackType::Horizontal);
         // grid_pack.set_spacing(10);
