@@ -1,14 +1,9 @@
-use std::thread;
-
 use fltk::{
-    app,
     group::{Pack, PackType},
     prelude::{GroupExt, WidgetExt},
 };
 
-use crate::data::notify_enum::ComputeStatus;
-use crate::data::notify_enum::NotifyType;
-use crate::data::singleton::{CHANNEL, COMPUTE_TASK, FOOT_SHOW, STATUS_TASK};
+use crate::data::singleton::FOOT_SHOW;
 
 use super::{labeled_line::LabeledLine, main_panel::ContentPanel};
 
@@ -24,68 +19,21 @@ impl WholeViewPanel {
         whole_view.set_type(PackType::Vertical);
 
         let line = LabeledLine::make_header(width);
+        whole_view.add(&*(line.get_whole_line().lock().unwrap()));
 
-        let binding = FOOT_SHOW.clone();
-        let foot = binding.lock().unwrap();
+        let foot = FOOT_SHOW.lock().unwrap();
         (*foot).show_window_size(width, height);
 
-        whole_view.end();
-        whole_view.add(&*(line.content().lock().unwrap()));
+        // whole_view.end();
 
         let double_line_height = line.get_height() + foot.get_height();
         let grid_pack = ContentPanel::new(width, height - double_line_height);
 
-        whole_view.end();
+        // whole_view.end();
         whole_view.add(&*grid_pack.get_panel());
 
-        whole_view.end();
-        whole_view.add(&*(foot.content().lock().unwrap()));
-
-        app::add_idle3(move |_| {
-            let received_type = CHANNEL.1.recv();
-            if let Some(nt) = received_type {
-                match nt {
-                    NotifyType::Status(status) => {
-                        (*FOOT_SHOW.lock().unwrap()).set_status(&status);
-                        match status {
-                            ComputeStatus::Waiting(up_time, selected_path) => {
-                                let t = STATUS_TASK.0.lock();
-                                if let Ok(mut t) = t {
-                                    let set = t.set_halt_time(up_time);
-                                    if set {
-                                        let lock = COMPUTE_TASK.lock();
-                                        if let Ok(mut task) = lock {
-                                            task.setup(selected_path);
-                                        }
-                                        thread::spawn(move || {
-                                            let x = STATUS_TASK.0.lock();
-                                            if let Ok(x) = x {
-                                                x.exec(up_time);
-                                            } else {
-                                                // reset app
-                                            }
-                                        });
-                                    }
-                                } else {
-                                    // reset app
-                                }
-                            }
-                            ComputeStatus::Computing => {
-                                let lock = COMPUTE_TASK.lock();
-                                if let Ok(task) = lock {
-                                    task.compute();
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                    NotifyType::Result(result) => {
-                        (*FOOT_SHOW.lock().unwrap()).set_result(&result);
-                    }
-                    _ => {}
-                }
-            }
-        });
+        // whole_view.end();
+        whole_view.add(&*(foot.get_whole_line().lock().unwrap()));
 
         WholeViewPanel {
             panel: Box::new(whole_view),

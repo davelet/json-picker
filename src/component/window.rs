@@ -15,7 +15,7 @@ impl AppWindow {
             .with_label(APP_NAME);
         wind.size_range(MIN_WIDTH, MIN_HEIGHT, 0, 0);
 
-        let mut whole_view = WHOLE_VIEW.lock().unwrap();
+        let whole_view = WHOLE_VIEW.lock().unwrap();
         wind.add(&*whole_view.get_panel());
         wind.end();
         AppWindow{window: wind}
