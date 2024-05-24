@@ -1,21 +1,17 @@
 [package]
 name = "json-hand"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 fltk = "^1.4"
 # fltk = { version = "^1.4", git = "https://github.com/fltk-rs/fltk-rs" }
-#rand = "0.8.5"
 serde_json = "1.0"
 lazy_static = "1.4"
 # fltk-evented = "0.5"
 strum = { version = "0.26", features = ["derive"] }
 regex = "1.10.4"
 chrono = "0.4.38"
-#tokio = { version = "1", features = ["full", "sync", "time"] }
 
 # [patch.crates-io]
 # fltk = { git = "https://github.com/fltk-rs/fltk-rs" } # https://github.com/fltk-rs/fltk-rs/issues/1544

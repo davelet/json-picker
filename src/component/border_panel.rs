@@ -1,5 +1,3 @@
-use std::rc::Rc;
-use std::sync::Arc;
 use std::thread;
 
 use fltk::{
@@ -10,14 +8,13 @@ use fltk::{
 
 use crate::data::notify_enum::ComputeStatus;
 use crate::data::notify_enum::NotifyType;
-use crate::data::singleton::{CHANNEL, COMPUTE_TASK, STATUS_TASK};
+use crate::data::singleton::{CHANNEL, COMPUTE_TASK, FOOT_SHOW, STATUS_TASK};
 
 use super::{labeled_line::LabeledLine, main_panel::ContentPanel};
 
 pub(crate) struct WholeViewPanel {
     panel: Box<Pack>,
     header: Box<LabeledLine>,
-    footer: Arc<LabeledLine>,
     content: Box<ContentPanel>,
 }
 
@@ -27,8 +24,10 @@ impl WholeViewPanel {
         whole_view.set_type(PackType::Vertical);
 
         let line = LabeledLine::make_header(width);
-        let foot = LabeledLine::init_footer(width);
-        foot.display_size(width, height);
+
+        let binding = FOOT_SHOW.clone();
+        let foot = binding.lock().unwrap();
+        (*foot).show_window_size(width, height);
 
         whole_view.end();
         whole_view.add(&*(line.content().lock().unwrap()));
@@ -42,14 +41,12 @@ impl WholeViewPanel {
         whole_view.end();
         whole_view.add(&*(foot.content().lock().unwrap()));
 
-        let footer = Arc::new(foot);
-        let foot_rc = footer.clone();
         app::add_idle3(move |_| {
             let received_type = CHANNEL.1.recv();
             if let Some(nt) = received_type {
                 match nt {
                     NotifyType::Status(status) => {
-                        (*foot_rc).set_status(&status);
+                        (*FOOT_SHOW.lock().unwrap()).set_status(&status);
                         match status {
                             ComputeStatus::Waiting(up_time, selected_path) => {
                                 let t = STATUS_TASK.0.lock();
@@ -83,7 +80,7 @@ impl WholeViewPanel {
                         }
                     }
                     NotifyType::Result(result) => {
-                        (*foot_rc).set_result(&result);
+                        (*FOOT_SHOW.lock().unwrap()).set_result(&result);
                     }
                     _ => {}
                 }
@@ -93,7 +90,6 @@ impl WholeViewPanel {
         WholeViewPanel {
             panel: Box::new(whole_view),
             header: Box::new(line),
-            footer,
             content: Box::new(grid_pack),
         }
     }
@@ -101,13 +97,15 @@ impl WholeViewPanel {
     pub(crate) fn get_panel(&self) -> Box<Pack> {
         self.panel.clone()
     }
-
     pub(crate) fn resize_with_auto_detect_size(&mut self) {
         let p = *self.get_panel();
         (*self.header).resize_with_parent_width(p.width());
-        (*self.footer).resize_with_parent_width(p.width());
-        (*self.footer).display_size(p.width(), p.height());
-        let margin = self.header.get_height() + self.footer.get_height();
+
+        let footer_guard = FOOT_SHOW.lock().unwrap();
+        (*footer_guard).resize_with_parent_width(p.width());
+        (*footer_guard).show_window_size(p.width(), p.height());
+
+        let margin = self.header.get_height() + footer_guard.get_height();
         (*self.content).resize_with_parent_size(p.width(), p.height() - margin);
     }
 }

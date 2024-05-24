@@ -61,7 +61,7 @@ impl LabeledLine {
         self.height
     }
 
-    pub(crate) fn display_size(&self, width: i32, height: i32) {
+    pub(crate) fn show_window_size(&self, width: i32, height: i32) {
         self.child(2).set_label(&*format!("{SIZE_DISPLAY} {width} x {height}"))
     }
 
