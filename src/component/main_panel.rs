@@ -8,7 +8,7 @@ use fltk::text::{TextBuffer, TextDisplay, TextEditor};
 use serde_json::Value;
 
 use crate::data::constants::{COLUMN_COUNT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
-use crate::data::singleton::{CHANNEL, GLOBAL_JSON};
+use crate::data::singleton::{CHANNEL, GLOBAL_JSON, JSON_INPUT_BOX, RESUTL_CONTROL, TREE_VIEW};
 use crate::logic::json_handle;
 
 pub(crate) struct ContentPanel {
@@ -24,77 +24,27 @@ impl ContentPanel {
         grid_pack.set_type(PackType::Horizontal);
         // grid_pack.set_spacing(10);
 
-        let mut input = TextEditor::default().with_size(width / COLUMN_COUNT, height);
+        let input = JSON_INPUT_BOX.lock().unwrap();
+        let mut input = (*input).clone();
         input.set_buffer(TextBuffer::default());
         grid_pack.end();
         grid_pack.add(&input);
 
-        let tree_view = JsonStructure::new(width / COLUMN_COUNT, height);
+        let tree_view = TREE_VIEW.lock().unwrap();
         let tree = *tree_view.get_tree();
 
         grid_pack.end();
         grid_pack.add(&tree);
 
-        let mut display = TextBuffer::default();
         let mut result = TextDisplay::default().with_size(width / 3, height);
-        result.set_buffer(display.clone());
+        result.set_buffer(RESUTL_CONTROL.lock().unwrap().clone());
         result.set_text_color(Color::Blue);
         grid_pack.end();
         grid_pack.add(&result);
 
         let right = Box::new(result);
         // let right_box = right.clone();
-        let mut display1 = display.clone();
-        input.handle(move |i, e| {
-            match e {
-                Event::Unfocus => {
-                    let buf = i.buffer().unwrap();
-                    let text = buf.text();
-                    if text.trim().len() == 0 {
-                        return true;
-                    }
-                    let s = CHANNEL.0.clone();
-                    if text.len() > JSON_SIZE_LIMIT { // move to `settings`
-                        s.send(NotifyType::Result(ComputeResult::Error(JSON_SIZE_WARN.to_string())));
-                        return true;
-                    }
-                    s.send(NotifyType::Status(ComputeStatus::Computing));
-                    let str = serde_json::from_str::<Value>(&*text);
-                    match str {
-                        Ok(json) => {
-                            let guard = GLOBAL_JSON.lock().unwrap();
-                            (*guard).set(json.clone());
-                            tree_view.set_tree(&json);
-                            display1.set_text(&*json_handle::pretty_json(&json));
-                            s.send(NotifyType::Result(ComputeResult::Normal));
-                        }
-                        Err(er) => {
-                            tree_view.clear();
-                            display1.set_text("");
-                            s.send(NotifyType::Result(ComputeResult::Error(er.to_string())));
-                        }
-                    }
-                    s.send(NotifyType::Status(ComputeStatus::Ready));
-                    true
-                }
-                _ => false,
-            }
-        });
-        let mut display2 = display.clone();
-        app::add_idle3(move |_| {
-            let received_type = CHANNEL.1.recv();
-            if let Some(nt) = received_type {
-                match nt {
-                    NotifyType::SelectedTree(json) => {
-                        println!("rev: selected tree");
-                        display2.set_text(&*json_handle::pretty_json(&json));
-                        CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Normal));
-                        CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
-                    }
-                    _ => {}
-                }
-            }
-        });
+
 
         ContentPanel {
             panel: Box::new(grid_pack),

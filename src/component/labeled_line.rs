@@ -4,12 +4,10 @@ use fltk::frame::Frame;
 use fltk::group::{Pack, PackType};
 use fltk::prelude::{GroupExt, WidgetExt};
 
-use crate::data::constants::COLUMN_COUNT;
+use crate::data::constants::{COLUMN_COUNT, FOOTER_HEIGHT, HEADER_HEIGHT};
 use crate::data::notify_enum::{ComputeResult, ComputeStatus};
 
 const SIZE_DISPLAY: &str = "Window:";
-const HEADER_HEIGHT: i32 = 20;
-const FOOTER_HEIGHT: i32 = 20;
 
 pub(crate) struct LabeledLine {
     whole_line: Arc<Mutex<Pack>>,

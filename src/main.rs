@@ -19,8 +19,7 @@ fn main() {
     wind.show();
 
     window_resize(wind);
-    listen_on_events(&app);
+    handle_json_input();
     make_ready();
-
-    app.run().unwrap();
+    listen_on_events(&app);
 }
