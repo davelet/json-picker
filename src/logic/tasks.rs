@@ -36,26 +36,30 @@ impl ComputeOnSelectedTask {
 
     pub(crate) fn compute(&self) {
         let mut cp = self.selected_path.clone();
-        println!("compute selected {}", cp.len());
         if cp.len() == 0 { return; }
         thread::spawn(move || {
-            println!("start >>>>>>>>>> ");
-            for p in &cp {
-                println!("selected {p}");
-            }
-            println!("end <<<<<<<<<<< ");
             let mut guard = GLOBAL_JSON.lock().unwrap();
             let mut json = (*guard).get_mut().clone();
             if cp.len() > 0 {
                 let mut path = &mut cp[0];
                 let mut c = path.pop();
                 while let Some(ref n) = c {
+                    if n == "{Object" {
+                        c = path.pop();
+                        continue;
+                    }
+                    let field = n.split_once(":").unwrap().0;
                     match json {
-                        Value::Object(ref j) => {
-                            let np = j.get(n);
+                        Value::Object(ref map) => {
+                            let np = map.get(field);
                             if let Some(vv) = np {
                                 json = (*vv).clone();
                             }
+                        }
+                        Value::Array(ref arr) => {
+                            let index = field.parse::<usize>().unwrap();
+                            let value = &arr[index];
+                            json = value.clone();
                         }
                         _ => {}
                     }
@@ -80,10 +84,6 @@ impl HaltWaitingStatusTask {
         }
     }
 
-    // fn reset(&mut self) {
-    //     self.halt_time = Local::now();
-    // }
-
     pub(crate) fn set_halt_time(&mut self, time: DateTime<Local>) -> bool {
         let i = self.update_count.write();
         match i {
@@ -107,7 +107,6 @@ impl HaltWaitingStatusTask {
             Err(_) => {}
             Ok(mut i) => {
                 let end_time = self.halt_time;
-                println!("execute time from {} {}", &end_time, &time);
                 if end_time != time && end_time.gt(&Local::now()) {
                     return;
                 }

@@ -69,11 +69,9 @@ pub(crate) fn handle_json_input() {
 pub(crate) fn listen_on_events(app: &App) {
     while app.wait() {
         if let Some(nt) = CHANNEL.1.recv() {
-            println!("app wait = {}", nt.as_ref());
             match nt {
                 NotifyType::Status(status) => {
                     (*FOOT_SHOW.lock().unwrap()).set_status(&status);
-                    println!("status {}", status.as_ref());
                     match status {
                         ComputeStatus::Waiting(up_time, selected_path) => {
                             let t = STATUS_TASK.0.lock();
@@ -110,7 +108,6 @@ pub(crate) fn listen_on_events(app: &App) {
                     (*FOOT_SHOW.lock().unwrap()).set_result(&result);
                 }
                 NotifyType::SelectedTree(json) => {
-                    println!("rev: selected tree");
                     RESUTL_CONTROL.lock().unwrap().set_text(&*json_handle::pretty_json(&json));
                     CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Normal));
                     CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));

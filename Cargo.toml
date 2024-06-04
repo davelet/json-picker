@@ -1,6 +1,6 @@
 [package]
 name = "json-hand"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 
 [dependencies]
@@ -12,6 +12,6 @@ lazy_static = "1.4"
 strum = { version = "0.26", features = ["derive"] }
 regex = "1.10.4"
 chrono = "0.4.38"
-
+fltk-theme = "0.7.2"
 # [patch.crates-io]
 # fltk = { git = "https://github.com/fltk-rs/fltk-rs" } # https://github.com/fltk-rs/fltk-rs/issues/1544
