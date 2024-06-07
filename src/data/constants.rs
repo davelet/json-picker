@@ -9,3 +9,4 @@ pub(crate) const COLUMN_COUNT: i32 = 3;
 pub(crate) const START_TIMEOUT: f64 = 0.5;
 pub(crate) const JSON_SIZE_LIMIT: usize = 1_000_000;
 pub(crate) const JSON_SIZE_WARN: &str = "input too long";
+pub(crate) const TREE_LABEL_SPLITTER: &str = ":";

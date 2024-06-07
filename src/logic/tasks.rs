@@ -1,36 +1,37 @@
 use std::sync::{Arc, RwLock};
 use std::thread;
-use std::time::Duration;
+
 use chrono::{DateTime, Local};
 use serde_json::Value;
 use strum::AsRefStr;
+
+use crate::data::constants::TREE_LABEL_SPLITTER;
 use crate::data::notify_enum::{ComputeStatus, NotifyType};
 use crate::data::singleton::{CHANNEL, GLOBAL_JSON};
 use crate::data::stack::Stack;
 
-#[derive(Clone, AsRefStr)]
-enum TaskStatus {
-    Initialed,
-    Pending,
-    Processing,
-    Done,
-    Error(String),
-}
+// #[derive(Clone, AsRefStr)]
+// enum TaskStatus {
+//     Initialed,
+//     Pending,
+//     Processing,
+//     Done,
+//     Error(String),
+// }
 
 pub(crate) struct ComputeOnSelectedTask {
-    status: String,
+    // status: String,
     selected_path: Vec<Stack<String>>,
 }
 
 impl ComputeOnSelectedTask {
     pub(crate) fn new() -> Self {
         ComputeOnSelectedTask {
-            status: TaskStatus::Initialed.as_ref().to_string(),
+            // status: TaskStatus::Initialed.as_ref().to_string(),
             selected_path: vec![],
         }
     }
     pub(crate) fn setup(&mut self, paths: Vec<Stack<String>>) {
-        println!("selected from {} to {}", self.selected_path.len(), paths.len());
         self.selected_path = paths;
     }
 
@@ -44,11 +45,11 @@ impl ComputeOnSelectedTask {
                 let mut path = &mut cp[0];
                 let mut c = path.pop();
                 while let Some(ref n) = c {
-                    if n == "{Object" {
+                    if !n.contains(TREE_LABEL_SPLITTER) {
                         c = path.pop();
                         continue;
                     }
-                    let field = n.split_once(":").unwrap().0;
+                    let field = n.split_once(TREE_LABEL_SPLITTER).unwrap().0;
                     match json {
                         Value::Object(ref map) => {
                             let np = map.get(field);
@@ -100,7 +101,7 @@ impl HaltWaitingStatusTask {
 
     pub(crate) fn exec(&self, time: DateTime<Local>) {
         let arc = self.update_count.clone();
-        thread::sleep(Duration::from_secs(2));// todo time diff
+        // thread::sleep(Duration::from_secs(2));// todo time diff
 
         let wt_lock = arc.write();
         match wt_lock {

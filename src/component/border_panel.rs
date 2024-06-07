@@ -46,7 +46,7 @@ impl WholeViewPanel {
         self.panel.clone()
     }
     pub(crate) fn resize_with_auto_detect_size(&mut self) {
-        let p = *self.get_panel();
+        let p = *self.panel.clone();
         (*self.header).resize_with_parent_width(p.width());
 
         let footer_guard = FOOT_SHOW.lock().unwrap();
