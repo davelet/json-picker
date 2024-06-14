@@ -51,6 +51,7 @@ impl LabeledLine {
         let line = Self::new(width, FOOTER_HEIGHT);
         line.child(0).set_label(ComputeStatus::Preparing.as_ref());
         line.child(1).set_label(ComputeResult::Normal.as_ref());
+
         line
     }
 
@@ -59,7 +60,7 @@ impl LabeledLine {
     }
 
     pub(crate) fn show_window_size(&self, width: i32, height: i32) {
-        self.child(2).set_label(&*format!("{SIZE_DISPLAY} {width} x {height}"))
+        self.child(2).set_label(&*format!("{} {width} x {height}", SIZE_DISPLAY))
     }
 
     pub(crate) fn resize_with_parent_width(&self, parent_w: i32) {

@@ -2,6 +2,7 @@ use fltk::{
     group::{Pack, PackType},
     prelude::{GroupExt, WidgetExt},
 };
+use crate::component::action_area::ActionArea;
 
 use crate::data::singleton::FOOT_SHOW;
 
@@ -24,15 +25,12 @@ impl WholeViewPanel {
         let foot = FOOT_SHOW.lock().unwrap();
         (*foot).show_window_size(width, height);
 
-        // whole_view.end();
-
+        let action_area = ActionArea::new(width, 30);
         let double_line_height = line.get_height() + foot.get_height();
-        let grid_pack = ContentPanel::new(width, height - double_line_height);
+        let grid_pack = ContentPanel::new(width, height - double_line_height - 30);
 
-        // whole_view.end();
         whole_view.add(&*grid_pack.get_panel());
-
-        // whole_view.end();
+        whole_view.add(&*action_area.area().lock().unwrap());
         whole_view.add(&*(foot.get_whole_line().lock().unwrap()));
 
         WholeViewPanel {
