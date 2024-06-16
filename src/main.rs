@@ -22,7 +22,8 @@ fn main() {
     wind.show();
 
     window_resize(wind);
-    handle_json_input();
+    // handle_json_input();
     make_ready();
+    listen_on_action();
     listen_on_events(&app);
 }
