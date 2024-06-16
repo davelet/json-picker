@@ -1,15 +1,10 @@
-use crate::component::structure_tree::JsonStructure;
-use crate::data::notify_enum::{ComputeResult, ComputeStatus, NotifyType};
-use fltk::enums::Event;
-use fltk::tree::Tree;
-use fltk::{app, enums::Color, group::{Pack, PackType}, prelude::{GroupExt, WidgetBase, WidgetExt}};
+use fltk::{enums::Color, group::{Pack, PackType}, prelude::{GroupExt, WidgetBase, WidgetExt}};
 use fltk::prelude::DisplayExt;
 use fltk::text::{TextBuffer, TextDisplay, TextEditor};
-use serde_json::Value;
+use fltk::tree::Tree;
 
-use crate::data::constants::{COLUMN_COUNT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
-use crate::data::singleton::{CHANNEL, GLOBAL_JSON, JSON_INPUT_BOX, RESUTL_CONTROL, TREE_VIEW};
-use crate::logic::json_handle;
+use crate::data::constants::COLUMN_COUNT;
+use crate::data::singleton::{JSON_INPUT_BOX, RESUTL_VIEW, TREE_VIEW};
 
 pub(crate) struct ContentPanel {
     panel: Box<Pack>,
@@ -37,7 +32,7 @@ impl ContentPanel {
         grid_pack.add(&tree);
 
         let mut result = TextDisplay::default().with_size(width / 3, height);
-        result.set_buffer(RESUTL_CONTROL.lock().unwrap().clone());
+        result.set_buffer(RESUTL_VIEW.lock().unwrap().clone());
         result.set_text_color(Color::Blue);
         grid_pack.end();
         grid_pack.add(&result);

@@ -16,7 +16,7 @@ impl JsonStructure {
     pub(crate) fn new(w: i32, h: i32) -> Self {
         let mut tree = Tree::default().with_size(w, h);
         tree.set_show_root(false);
-        tree.set_select_mode(TreeSelect::Multi);
+        tree.set_select_mode(TreeSelect::Single);
         tree.set_color(Color::Blue);
 
         tree.set_callback(|t| {
