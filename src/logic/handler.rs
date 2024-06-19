@@ -8,17 +8,28 @@ use serde_json::Value;
 
 use crate::data::constants::{JSON_SIZE_LIMIT, JSON_SIZE_WARN, START_TIMEOUT};
 use crate::data::notify_enum::{ComputeResult, ComputeStatus, NotifyType};
-use crate::data::singleton::{ACTION_BTNS, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, RESUTL_VIEW, STATUS_TASK, TREE_VIEW, WHOLE_VIEW};
+use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, RESUTL_VIEW, STATUS_TASK, TREE_VIEW, WHOLE_VIEW};
 use crate::logic::json_handle;
 
-pub(crate) fn make_ready() {
+pub(crate) fn handle_event(app: &App) {
+    window_resize();
+    handle_json_input();
+    listen_on_action();
+    make_ready();
+
+    listen_on_events(&app);
+}
+
+fn make_ready() {
     app::add_timeout3(START_TIMEOUT, |_| {
         CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
     });
 }
 
-pub(crate) fn window_resize(window: &mut Window) {
+fn window_resize() {
     let mut whole_view = WHOLE_VIEW.lock().unwrap();
+    let mut binding = APP_WINDOW.lock().unwrap();
+    let window = binding.get_window();
     window.handle(move |_, e| match e {
         Event::Resize => {
             whole_view.resize_with_auto_detect_size();
@@ -28,7 +39,7 @@ pub(crate) fn window_resize(window: &mut Window) {
     });
 }
 
-pub(crate) fn handle_json_input() {
+fn handle_json_input() {
     JSON_INPUT_BOX.lock().unwrap().handle(|i, e| {
         match e {
             Event::Unfocus => {
@@ -66,7 +77,7 @@ pub(crate) fn handle_json_input() {
     });
 }
 
-pub(crate) fn listen_on_events(app: &App) {
+fn listen_on_events(app: &App) {
     while app.wait() {
         if let Some(nt) = CHANNEL.1.recv() {
             match nt {
@@ -118,39 +129,12 @@ pub(crate) fn listen_on_events(app: &App) {
     }
 }
 
-pub(crate) fn listen_on_action() {
+fn listen_on_action() {
     let mut btns = ACTION_BTNS.lock().unwrap();
-    let mut a = &mut (*btns)[0];
-    a.set_callback(|_| {
-        println!("a clicked");
-        let buf = JSON_INPUT_BOX.lock().unwrap().buffer().unwrap();
-        let text = buf.text();
-        if text.trim().len() == 0 {
-            TREE_VIEW.lock().unwrap().clear();
-            RESUTL_VIEW.lock().unwrap().set_text("");
-            return;
-        }
-        let s = CHANNEL.0.clone();
-        if text.len() > JSON_SIZE_LIMIT { // move to `settings`
-            s.send(NotifyType::Result(ComputeResult::Error(JSON_SIZE_WARN.to_string())));
-            return;
-        }
-        s.send(NotifyType::Status(ComputeStatus::Computing));
-        let str = serde_json::from_str::<Value>(&*text);
-        match str {
-            Ok(json) => {
-                let guard = GLOBAL_JSON.lock().unwrap();
-                (*guard).set(json.clone());
-                TREE_VIEW.lock().unwrap().set_tree(&json);
-                RESUTL_VIEW.lock().unwrap().set_text(&*json_handle::pretty_json(&json));
-                s.send(NotifyType::Result(ComputeResult::Normal));
-            }
-            Err(er) => {
-                TREE_VIEW.lock().unwrap().clear();
-                RESUTL_VIEW.lock().unwrap().set_text("");
-                s.send(NotifyType::Result(ComputeResult::Error(er.to_string())));
-            }
-        }
-        s.send(NotifyType::Status(ComputeStatus::Ready));
+    let mut parse_btn = &mut (*btns)[0];
+    parse_btn.set_callback(|_| {
+        let mut bind = APP_WINDOW.lock().unwrap();
+        let w = bind.get_window();
+        w.redraw();// this is for Tree view to display tree; without `redraw`, the tree wouldn't show. why?
     })
 }

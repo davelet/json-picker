@@ -13,17 +13,14 @@ mod logic;
 fn main() {
     let mut app = app::App::default();
     app.set_scheme(Scheme::Plastic);
-    // let theme = ColorTheme::new(color_themes::SHAKE_THEME);
-    // theme.apply();
+    let theme = ColorTheme::new(color_themes::GRAY_THEME);
+    theme.apply();
+    {
+        let mut window = APP_WINDOW.lock().unwrap();
+        let wind = window.get_window();
+        wind.make_resizable(true);
+        wind.show();
+    }
 
-    let mut window = APP_WINDOW.lock().unwrap();
-    let wind = window.get_window();
-    wind.make_resizable(true);
-    wind.show();
-
-    window_resize(wind);
-    // handle_json_input();
-    make_ready();
-    listen_on_action();
-    listen_on_events(&app);
+    handle_event(&app);
 }
