@@ -13,5 +13,6 @@ strum = { version = "0.26", features = ["derive"] }
 regex = "1.10.4"
 chrono = "0.4.38"
 fltk-theme = "0.7.2"
+clipboard = "0.5.0"
 # [patch.crates-io]
 # fltk = { git = "https://github.com/fltk-rs/fltk-rs" } # https://github.com/fltk-rs/fltk-rs/issues/1544

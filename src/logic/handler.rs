@@ -1,9 +1,10 @@
 use std::thread;
+
+use clipboard::{ClipboardContext, ClipboardProvider};
 use fltk::app;
 use fltk::app::App;
 use fltk::enums::Event;
 use fltk::prelude::{DisplayExt, WidgetBase, WidgetExt};
-use fltk::window::Window;
 use serde_json::Value;
 
 use crate::data::constants::{JSON_SIZE_LIMIT, JSON_SIZE_WARN, START_TIMEOUT};
@@ -135,6 +136,28 @@ fn listen_on_action() {
     parse_btn.set_callback(|_| {
         let mut bind = APP_WINDOW.lock().unwrap();
         let w = bind.get_window();
-        w.redraw();// this is for Tree view to display tree; without `redraw`, the tree wouldn't show. why?
-    })
+        w.redraw(); // this is for Tree view to display tree; without `redraw`, the tree wouldn't show. why?
+    });
+
+    let mut copy_btn = &mut (*btns)[2];
+    copy_btn.set_callback(|_| {
+        let mut bind = RESUTL_VIEW.lock().unwrap();
+        let buffer = bind.text();
+        if buffer.trim().len() == 0 {
+            CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from("copy failed: empty content"))));
+            return;
+        }
+        let cb = ClipboardContext::new();
+        if let Err(er) = cb {
+            CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from(er.to_string()))));
+            return;
+        }
+        let mut clipboard_context = cb.unwrap();
+        let result = clipboard_context.set_contents(buffer);
+        if let Err(er) = result {
+            CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from(er.to_string()))));
+        } else {
+            CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from("copied to clipboard"))));
+        }
+    });
 }
