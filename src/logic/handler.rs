@@ -131,33 +131,53 @@ fn listen_on_events(app: &App) {
 }
 
 fn listen_on_action() {
-    let mut btns = ACTION_BTNS.lock().unwrap();
-    let mut parse_btn = &mut (*btns)[0];
-    parse_btn.set_callback(|_| {
-        let mut bind = APP_WINDOW.lock().unwrap();
-        let w = bind.get_window();
-        w.redraw(); // this is for Tree view to display tree; without `redraw`, the tree wouldn't show. why?
-    });
+    {
+        let mut btns = ACTION_BTNS.lock().unwrap();
+        let mut parse_btn = &mut btns[0];
+        parse_btn.set_callback(|_| {
+            let mut bind = APP_WINDOW.lock().unwrap();
+            let w = bind.get_window();
+            w.redraw(); // this is for Tree view to display tree; without `redraw`, the tree wouldn't show. why?
+        });
+    }
 
-    let mut copy_btn = &mut (*btns)[2];
-    copy_btn.set_callback(|_| {
-        let mut bind = RESUTL_VIEW.lock().unwrap();
-        let buffer = bind.text();
-        if buffer.trim().len() == 0 {
-            CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from("copy failed: empty content"))));
-            return;
+    {
+        let mut btns = ACTION_BTNS.lock().unwrap();
+        let mut copy_btn = &mut btns[2];
+        copy_btn.set_callback(|_| {
+            let mut bind = RESUTL_VIEW.lock().unwrap();
+            let buffer = bind.text();
+            if buffer.trim().len() == 0 {
+                CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from("copy failed: empty content"))));
+                return;
+            }
+            let cb = ClipboardContext::new();
+            if let Err(er) = cb {
+                CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from(er.to_string()))));
+                return;
+            }
+            let mut clipboard_context = cb.unwrap();
+            let result = clipboard_context.set_contents(buffer);
+            if let Err(er) = result {
+                CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from(er.to_string()))));
+            } else {
+                CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from("copied to clipboard"))));
+            }
+        });
+    }
+
+    let mut btns = ACTION_BTNS.lock().unwrap();
+    let mut clear_btn = &mut btns[3];
+    clear_btn.set_callback(|_| {
+        {
+            let mut bind = JSON_INPUT_BOX.lock().unwrap();
+            bind.buffer().unwrap().set_text("");
         }
-        let cb = ClipboardContext::new();
-        if let Err(er) = cb {
-            CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from(er.to_string()))));
-            return;
+        {
+            let mut bind = RESUTL_VIEW.lock().unwrap();
+            bind.set_text("");
         }
-        let mut clipboard_context = cb.unwrap();
-        let result = clipboard_context.set_contents(buffer);
-        if let Err(er) = result {
-            CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from(er.to_string()))));
-        } else {
-            CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from("copied to clipboard"))));
-        }
+        let bind = TREE_VIEW.lock().unwrap();
+        bind.clear()
     });
 }
