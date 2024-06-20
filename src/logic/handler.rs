@@ -140,7 +140,10 @@ fn listen_on_action() {
             w.redraw(); // this is for Tree view to display tree; without `redraw`, the tree wouldn't show. why?
         });
     }
-
+    {
+        let mut btns = ACTION_BTNS.lock().unwrap();
+        let mut search_btn = &mut btns[1];
+    }
     {
         let mut btns = ACTION_BTNS.lock().unwrap();
         let mut copy_btn = &mut btns[2];
@@ -148,7 +151,7 @@ fn listen_on_action() {
             let mut bind = RESUTL_VIEW.lock().unwrap();
             let buffer = bind.text();
             if buffer.trim().len() == 0 {
-                CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from("copy failed: empty content"))));
+                CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from("didn't copy: empty content"))));
                 return;
             }
             let cb = ClipboardContext::new();
