@@ -4,12 +4,12 @@ use clipboard::{ClipboardContext, ClipboardProvider};
 use fltk::app;
 use fltk::app::App;
 use fltk::enums::Event;
-use fltk::prelude::{DisplayExt, WidgetBase, WidgetExt};
+use fltk::prelude::{DisplayExt, InputExt, WidgetBase, WidgetExt};
 use serde_json::Value;
 
 use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN, START_TIMEOUT};
 use crate::data::notify_enum::{ComputeResult, ComputeStatus, NotifyType};
-use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_VIEW, WHOLE_VIEW};
+use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
 use crate::logic::json_handle;
 
 pub(crate) fn handle_event(app: &App) {
@@ -124,6 +124,15 @@ fn listen_on_events(app: &App) {
                     CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Normal));
                     CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
                 }
+                NotifyType::SearchTree(pattern) => {
+                    TREE_VIEW.lock().unwrap().search_nodes(pattern);
+                    let mut bind = APP_WINDOW.lock().unwrap();
+                    let w = bind.get_window();
+                    w.redraw();
+
+                    CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Normal));
+                    CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
+                }
                 _ => {}
             }
         }
@@ -153,6 +162,8 @@ fn listen_on_action() {
             if is_show {
                 bar.hide();
                 tree.set_size(w, h + ACTION_BUTTON_HEIGHT);
+                let mut inbox = TREE_SEARCH_BOX.lock().unwrap();
+                inbox.set_value("");
             } else {
                 tree.set_size(w, h - ACTION_BUTTON_HEIGHT);
                 bar.show();
@@ -186,19 +197,31 @@ fn listen_on_action() {
             }
         });
     }
+    {
+        let mut btns = ACTION_BTNS.lock().unwrap();
+        let mut clear_btn = &mut btns[3];
+        clear_btn.set_callback(|_| {
+            {
+                let mut bind = JSON_INPUT_BOX.lock().unwrap();
+                bind.buffer().unwrap().set_text("");
+            }
+            {
+                let mut bind = RESUTL_VIEW.lock().unwrap();
+                bind.set_text("");
+            }
+            let bind = TREE_VIEW.lock().unwrap();
+            bind.clear()
+        });
+    }
+    {
+        let mut do_search_btn = TREE_SEARCH_BTN.lock().unwrap();
+        do_search_btn.set_callback(|_| {
+            let inbox = TREE_SEARCH_BOX.lock().unwrap();
+            let binding = inbox.value();
+            let pattern = binding.trim();
 
-    let mut btns = ACTION_BTNS.lock().unwrap();
-    let mut clear_btn = &mut btns[3];
-    clear_btn.set_callback(|_| {
-        {
-            let mut bind = JSON_INPUT_BOX.lock().unwrap();
-            bind.buffer().unwrap().set_text("");
-        }
-        {
-            let mut bind = RESUTL_VIEW.lock().unwrap();
-            bind.set_text("");
-        }
-        let bind = TREE_VIEW.lock().unwrap();
-        bind.clear()
-    });
+            CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Computing));
+            CHANNEL.0.clone().send(NotifyType::SearchTree(pattern.into()));
+        });
+    }
 }

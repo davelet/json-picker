@@ -11,6 +11,7 @@ pub(crate) enum NotifyType {
     Status(ComputeStatus),
     Result(ComputeResult),
     SelectedTree(Value),
+    SearchTree(String)
 }
 unsafe impl Send for NotifyType{}
 unsafe impl Sync for NotifyType{}

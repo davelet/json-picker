@@ -16,6 +16,7 @@ use crate::logic::json_handle::{add_tree_items, parse_path_chain};
 
 pub(crate) struct JsonStructure {
     view: Pack,
+    search_text: String,
 }
 
 impl JsonStructure {
@@ -49,6 +50,7 @@ impl JsonStructure {
 
         JsonStructure {
             view: pack,
+            search_text: "".into(),
         }
     }
 
@@ -84,4 +86,23 @@ impl JsonStructure {
         bar_guard.resize(width);
     }
 
+    pub(crate) fn search_nodes(&mut self, pattern: String) -> bool {
+        if self.search_text == pattern { return false; }
+        self.search_text = pattern.clone();
+
+        let mut tree = TREE_MAIN.lock().unwrap();
+        let items = tree.get_items();
+        if let Some(items) = items {
+            for mut item in items {
+                item.set_label_bgcolor(Color::Blue);
+
+                if pattern == "" { continue; }
+                let label = item.label().unwrap();
+                if label.contains(&*pattern) {
+                    item.set_label_bgcolor(Color::Yellow);
+                }
+            }
+        };
+        false
+    }
 }

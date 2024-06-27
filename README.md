@@ -2,5 +2,6 @@
  is a json-string parser. And using it, you can select parts in JSON structure tree to look into part of the json value.
 
  # TODO
- - startup parameters 
+ - json format error
+ - startup parameters
  - settings
