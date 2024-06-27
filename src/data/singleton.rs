@@ -5,6 +5,7 @@ use fltk::button::Button;
 use fltk::input::Input;
 use fltk::prelude::WidgetExt;
 use fltk::text::{TextBuffer, TextEditor};
+use fltk::tree::Tree;
 use serde_json::Value;
 use serde_json::Value::Null;
 
@@ -23,6 +24,7 @@ lazy_static::lazy_static! {
     pub(crate) static ref FOOT_SHOW: Mutex<LabeledLine> = Mutex::new(LabeledLine::init_footer(DEFAULT_WIDTH));
     pub(crate) static ref RESUTL_VIEW: Mutex<TextBuffer> = Mutex::new(TextBuffer::default());
     pub(crate) static ref TREE_VIEW: Mutex<JsonStructure> = Mutex::new(JsonStructure::new(DEFAULT_WIDTH / COLUMN_COUNT, CONTENT_HEIGHT));
+    pub(crate) static ref TREE_MAIN: Mutex<Tree> = Mutex::new(Tree::default().with_size(DEFAULT_WIDTH / COLUMN_COUNT, CONTENT_HEIGHT));
     pub(crate) static ref JSON_INPUT_BOX: Mutex<TextEditor> = Mutex::new(TextEditor::default().with_size(DEFAULT_WIDTH / COLUMN_COUNT, CONTENT_HEIGHT));
     pub(crate) static ref ACTION_BTNS: Mutex<[Button; ACTION_BUTTON_COUNT as usize]> = Mutex::new([
             Button::default().with_size(DEFAULT_WIDTH/ ACTION_BUTTON_COUNT, ACTION_BUTTON_HEIGHT).with_label(ACTION_BUTTON_LABELS[0]),

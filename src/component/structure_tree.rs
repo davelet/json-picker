@@ -11,12 +11,11 @@ use crate::component::search_bar::SearchBar;
 
 use crate::data::constants::{ACTION_BUTTON_COUNT, ACTION_BUTTON_HEIGHT, SEARCH_BAR_HEIGHT, SEARCH_BTN_WIDTH};
 use crate::data::notify_enum::{ComputeStatus, NotifyType};
-use crate::data::singleton::{ACTION_BTNS, CHANNEL, TREE_SEARCH_BAR};
+use crate::data::singleton::{ACTION_BTNS, CHANNEL, TREE_MAIN, TREE_SEARCH_BAR};
 use crate::logic::json_handle::{add_tree_items, parse_path_chain};
 
 pub(crate) struct JsonStructure {
     view: Pack,
-    tree: Box<Tree>,
 }
 
 impl JsonStructure {
@@ -25,7 +24,7 @@ impl JsonStructure {
         pack.set_type(PackType::Vertical);
         pack.set_color(Color::Blue);
 
-        let mut tree = Tree::default().with_size(w, h);
+        let mut tree = TREE_MAIN.lock().unwrap();
         tree.set_show_root(false);
         tree.set_select_mode(TreeSelect::Single);
         tree.set_color(Color::Blue);
@@ -42,7 +41,7 @@ impl JsonStructure {
                 CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Waiting(two_sec_later, paths)));
             }
         });
-        pack.add(&tree);
+        pack.add(&*tree);
         let bar = TREE_SEARCH_BAR.lock().unwrap();
         let mut x = bar.get_bar();
         pack.add(&*x);
@@ -50,7 +49,6 @@ impl JsonStructure {
 
         JsonStructure {
             view: pack,
-            tree: Box::new(tree),
         }
     }
 
@@ -59,29 +57,31 @@ impl JsonStructure {
     }
 
     pub(crate) fn set_tree(&self, json: &Value) {
-        let mut tree = self.tree.clone();
+        let mut tree = TREE_MAIN.lock().unwrap();
         tree.clear();
         add_tree_items(&mut tree, json, String::from("/"));
     }
 
     pub(crate) fn clear(&self) {
-        let root = self.tree.clone().root();
+        let mut tree = TREE_MAIN.lock().unwrap();
+        let root = tree.root();
         if let Some(root) = root {
-            self.tree.clone().clear_children(&root);
+            tree.clear_children(&root);
         }
         // self.get_tree().clear() // bug as https://github.com/fltk-rs/fltk-rs/issues/1544
     }
 
     pub(crate) fn resize(&mut self, width: i32, height: i32) {
         self.view.set_size(width, height);
-        let mut guard = TREE_SEARCH_BAR.lock().unwrap();
+        let mut bar_guard = TREE_SEARCH_BAR.lock().unwrap();
+        let mut tree_guard = TREE_MAIN.lock().unwrap();
         let mut margin = 0;
-        if guard.get_bar().visible() {
+        if bar_guard.get_bar().visible() {
             margin = SEARCH_BAR_HEIGHT;
         }
 
-        self.tree.clone().set_size(width, height - margin);
-        guard.resize(width);
+        tree_guard.set_size(width, height - margin);
+        bar_guard.resize(width);
     }
 
 }

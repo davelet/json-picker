@@ -7,9 +7,9 @@ use fltk::enums::Event;
 use fltk::prelude::{DisplayExt, WidgetBase, WidgetExt};
 use serde_json::Value;
 
-use crate::data::constants::{JSON_SIZE_LIMIT, JSON_SIZE_WARN, START_TIMEOUT};
+use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN, START_TIMEOUT};
 use crate::data::notify_enum::{ComputeResult, ComputeStatus, NotifyType};
-use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, RESUTL_VIEW, STATUS_TASK, TREE_VIEW, WHOLE_VIEW};
+use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_VIEW, WHOLE_VIEW};
 use crate::logic::json_handle;
 
 pub(crate) fn handle_event(app: &App) {
@@ -143,6 +143,24 @@ fn listen_on_action() {
     {
         let mut btns = ACTION_BTNS.lock().unwrap();
         let mut search_btn = &mut btns[1];
+        search_btn.set_callback(|_| {
+            let mut bar = TREE_SEARCH_BAR.lock().unwrap().get_bar();
+            let mut tree = TREE_MAIN.lock().unwrap();
+            let is_show = bar.visible();
+
+            let w = tree.w();
+            let h = tree.h();
+            if is_show {
+                bar.hide();
+                tree.set_size(w, h + ACTION_BUTTON_HEIGHT);
+            } else {
+                tree.set_size(w, h - ACTION_BUTTON_HEIGHT);
+                bar.show();
+            }
+            let mut bind = APP_WINDOW.lock().unwrap();
+            let win = bind.get_window();
+            win.redraw();// save as above...why
+        })
     }
     {
         let mut btns = ACTION_BTNS.lock().unwrap();
