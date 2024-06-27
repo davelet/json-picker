@@ -9,15 +9,14 @@ use fltk::tree::{Tree, TreeSelect};
 use serde_json::Value;
 use crate::component::search_bar::SearchBar;
 
-use crate::data::constants::{ACTION_BUTTON_COUNT, ACTION_BUTTON_HEIGHT, SEARCH_BAR_HEIGHT};
+use crate::data::constants::{ACTION_BUTTON_COUNT, ACTION_BUTTON_HEIGHT, SEARCH_BAR_HEIGHT, SEARCH_BTN_WIDTH};
 use crate::data::notify_enum::{ComputeStatus, NotifyType};
-use crate::data::singleton::{ACTION_BTNS, CHANNEL};
+use crate::data::singleton::{ACTION_BTNS, CHANNEL, TREE_SEARCH_BAR};
 use crate::logic::json_handle::{add_tree_items, parse_path_chain};
 
 pub(crate) struct JsonStructure {
     view: Pack,
     tree: Box<Tree>,
-    search_bar: Box<SearchBar>,
 }
 
 impl JsonStructure {
@@ -26,7 +25,7 @@ impl JsonStructure {
         pack.set_type(PackType::Vertical);
         pack.set_color(Color::Blue);
 
-        let mut tree = Tree::default().with_size(w, h - SEARCH_BAR_HEIGHT);
+        let mut tree = Tree::default().with_size(w, h);
         tree.set_show_root(false);
         tree.set_select_mode(TreeSelect::Single);
         tree.set_color(Color::Blue);
@@ -44,14 +43,14 @@ impl JsonStructure {
             }
         });
         pack.add(&tree);
-        let bar = SearchBar::new(w);
-        // action_bar.hide();
-        pack.add(&*bar.get_bar());
+        let bar = TREE_SEARCH_BAR.lock().unwrap();
+        let mut x = bar.get_bar();
+        pack.add(&*x);
+        x.hide();
 
         JsonStructure {
             view: pack,
             tree: Box::new(tree),
-            search_bar: Box::new(bar),
         }
     }
 
@@ -75,8 +74,14 @@ impl JsonStructure {
 
     pub(crate) fn resize(&mut self, width: i32, height: i32) {
         self.view.set_size(width, height);
-        self.tree.clone().set_size(width, height - SEARCH_BAR_HEIGHT);
-        self.search_bar.resize(width);
+        let mut guard = TREE_SEARCH_BAR.lock().unwrap();
+        let mut margin = 0;
+        if guard.get_bar().visible() {
+            margin = SEARCH_BAR_HEIGHT;
+        }
+
+        self.tree.clone().set_size(width, height - margin);
+        guard.resize(width);
     }
 
 }
