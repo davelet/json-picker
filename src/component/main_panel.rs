@@ -9,7 +9,6 @@ use crate::data::singleton::{JSON_INPUT_BOX, RESUTL_VIEW, TREE_VIEW};
 pub(crate) struct ContentPanel {
     panel: Box<Pack>,
     left: Box<TextEditor>,
-    // center: Box<Pack>,
     right: Box<TextDisplay>,
 }
 
@@ -23,9 +22,11 @@ impl ContentPanel {
         input.set_buffer(TextBuffer::default());
         grid_pack.add(&input);
 
-        let tree_view = TREE_VIEW.lock().unwrap();
-        let tree_pack = tree_view.view();
-        grid_pack.add(tree_pack);
+        {
+            let tree_view = TREE_VIEW.lock().unwrap();
+            let tree_pack = tree_view.view();
+            grid_pack.add(tree_pack);
+        }
 
         let mut result = TextDisplay::default().with_size(width / 3, height);
         result.set_buffer(RESUTL_VIEW.lock().unwrap().clone());
@@ -37,7 +38,6 @@ impl ContentPanel {
         ContentPanel {
             panel: Box::new(grid_pack),
             left: Box::new(input),
-            // center: Box::new(tree),
             right,
         }
     }
@@ -50,7 +50,10 @@ impl ContentPanel {
         let mut pack = *self.get_panel();
         pack.set_size(parent_w, parent_h);
         self.left.set_size(parent_w / COLUMN_COUNT, parent_h);
-        // self.center.set_size(parent_w / COLUMN_COUNT, parent_h);
+        {
+            let mut tv = TREE_VIEW.lock().unwrap();
+            tv.resize(parent_w / COLUMN_COUNT, parent_h);
+        }
         self.right.set_size(parent_w / COLUMN_COUNT, parent_h);
     }
 }

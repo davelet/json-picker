@@ -1,6 +1,6 @@
 use fltk::group::{Pack, PackType};
 use fltk::prelude::{GroupExt, WidgetExt};
-use crate::data::constants::SEARCH_BAR_HEIGHT;
+use crate::data::constants::{ACTION_BUTTON_HEIGHT, SEARCH_BAR_HEIGHT, SEARCH_BTN_WIDTH};
 use crate::data::singleton::{TREE_SEARCH_BOX, TREE_SEARCH_BTN};
 
 pub(crate) struct SearchBar {
@@ -23,5 +23,11 @@ impl SearchBar {
 
     pub(crate) fn get_bar(&self) -> Box<Pack> {
         self.bar.clone()
+    }
+
+    pub(crate) fn resize(&mut self, w: i32) {
+        self.bar.set_size(w, ACTION_BUTTON_HEIGHT);
+        let mut input = TREE_SEARCH_BOX.lock().unwrap();
+        input.set_size(w - SEARCH_BTN_WIDTH, ACTION_BUTTON_HEIGHT);
     }
 }

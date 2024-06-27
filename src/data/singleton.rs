@@ -12,7 +12,7 @@ use crate::component::border_panel::WholeViewPanel;
 use crate::component::labeled_line::LabeledLine;
 use crate::component::structure_tree::JsonStructure;
 use crate::component::window::AppWindow;
-use crate::data::constants::{ACTION_BUTTON_COUNT, ACTION_BUTTON_HEIGHT, ACTION_BUTTON_LABELS, COLUMN_COUNT, CONTENT_HEIGHT, DEFAULT_HEIGHT, DEFAULT_WIDTH, SEARCH_BAR_HEIGHT, SEARCH_BTN_WIDTH};
+use crate::data::constants::{ACTION_BUTTON_COUNT, ACTION_BUTTON_HEIGHT, ACTION_BUTTON_LABELS, COLUMN_COUNT, CONTENT_HEIGHT, DEFAULT_HEIGHT, DEFAULT_WIDTH, SEARCH_BAR_HEIGHT, SEARCH_BTN_LABEL, SEARCH_BTN_WIDTH};
 use crate::data::notify_enum::NotifyType;
 use crate::logic::tasks::{ComputeOnSelectedTask, HaltWaitingStatusTask};
 
@@ -30,7 +30,7 @@ lazy_static::lazy_static! {
             Button::default().with_size(DEFAULT_WIDTH/ ACTION_BUTTON_COUNT, ACTION_BUTTON_HEIGHT).with_label(ACTION_BUTTON_LABELS[3])
     ]);
     pub(crate) static ref TREE_SEARCH_BOX: Mutex<Input> = Mutex::new(Input::default().with_size(DEFAULT_WIDTH / COLUMN_COUNT - SEARCH_BTN_WIDTH, SEARCH_BAR_HEIGHT));
-    pub(crate) static ref TREE_SEARCH_BTN: Mutex<Button> = Mutex::new(Button::default().with_size(SEARCH_BTN_WIDTH, SEARCH_BAR_HEIGHT));
+    pub(crate) static ref TREE_SEARCH_BTN: Mutex<Button> = Mutex::new(Button::default().with_size(SEARCH_BTN_WIDTH, SEARCH_BAR_HEIGHT).with_label(SEARCH_BTN_LABEL));
 
     pub(crate) static ref CHANNEL: (fltk::app::Sender<NotifyType>, fltk::app::Receiver<NotifyType>) = fltk::app::channel();
     pub(crate) static ref STATUS_TASK: (Mutex<HaltWaitingStatusTask>,) = (Mutex::new(HaltWaitingStatusTask::new()), );

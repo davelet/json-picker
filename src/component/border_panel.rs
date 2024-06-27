@@ -48,15 +48,16 @@ impl WholeViewPanel {
     }
     pub(crate) fn resize_with_auto_detect_size(&mut self) {
         let p = *self.panel.clone();
-        (*self.header).resize_with_parent_width(p.width());
+        let w = p.width();
+        (*self.header).resize_with_parent_width(w);
 
         let footer_guard = FOOT_SHOW.lock().unwrap();
-        (*footer_guard).resize_with_parent_width(p.width());
-        (*footer_guard).show_window_size(p.width(), p.height());
+        (*footer_guard).resize_with_parent_width(w);
+        (*footer_guard).show_window_size(w, p.height());
 
         let margin = self.header.get_height() + footer_guard.get_height() + self.action_area.get_height();
-        (*self.content).resize_with_parent_size(p.width(), p.height() - margin);
+        (*self.content).resize_with_parent_size(w, p.height() - margin);
 
-        self.action_area.resize(p.width());
+        self.action_area.resize(w);
     }
 }

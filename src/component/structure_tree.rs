@@ -9,14 +9,15 @@ use fltk::tree::{Tree, TreeSelect};
 use serde_json::Value;
 use crate::component::search_bar::SearchBar;
 
-use crate::data::constants::SEARCH_BAR_HEIGHT;
+use crate::data::constants::{ACTION_BUTTON_COUNT, ACTION_BUTTON_HEIGHT, SEARCH_BAR_HEIGHT};
 use crate::data::notify_enum::{ComputeStatus, NotifyType};
-use crate::data::singleton::CHANNEL;
+use crate::data::singleton::{ACTION_BTNS, CHANNEL};
 use crate::logic::json_handle::{add_tree_items, parse_path_chain};
 
 pub(crate) struct JsonStructure {
     view: Pack,
-    tree: Box<Tree>
+    tree: Box<Tree>,
+    search_bar: Box<SearchBar>,
 }
 
 impl JsonStructure {
@@ -43,13 +44,14 @@ impl JsonStructure {
             }
         });
         pack.add(&tree);
-        let action_bar = &mut *SearchBar::new(w).get_bar();
-        action_bar.hide();
-        pack.add(action_bar);
+        let bar = SearchBar::new(w);
+        // action_bar.hide();
+        pack.add(&*bar.get_bar());
 
         JsonStructure {
             view: pack,
-            tree: Box::new(tree)
+            tree: Box::new(tree),
+            search_bar: Box::new(bar),
         }
     }
 
@@ -69,6 +71,12 @@ impl JsonStructure {
             self.tree.clone().clear_children(&root);
         }
         // self.get_tree().clear() // bug as https://github.com/fltk-rs/fltk-rs/issues/1544
+    }
+
+    pub(crate) fn resize(&mut self, width: i32, height: i32) {
+        self.view.set_size(width, height);
+        self.tree.clone().set_size(width, height - SEARCH_BAR_HEIGHT);
+        self.search_bar.resize(width);
     }
 
 }
