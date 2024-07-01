@@ -3,10 +3,11 @@ use serde_json::Value;
 
 use crate::data::stack::Stack;
 
-pub fn pretty_json(json: &Value) -> String {
+pub(crate) fn pretty_json(json: &Value) -> String {
     pretty_json_with_indent(json, 0)
 }
-pub fn pretty_json_with_indent(json: &Value, indent: usize) -> String {
+
+fn pretty_json_with_indent(json: &Value, indent: usize) -> String {
     let mut output = String::new();
     match json {
         Value::Object(obj) => {
@@ -20,7 +21,7 @@ pub fn pretty_json_with_indent(json: &Value, indent: usize) -> String {
                     pretty_json_with_indent(value, indent + 1)
                 );
             }
-            output.pop(); // 移除最后的逗号
+            trim_json(&mut output); // 移除最后的逗号
             output += &format!("\n{}}}", " ".repeat(indent));
         }
         Value::Array(arr) => {
@@ -33,7 +34,7 @@ pub fn pretty_json_with_indent(json: &Value, indent: usize) -> String {
                     pretty_json_with_indent(value, indent + 1)
                 );
             }
-            output.pop(); // 移除最后的逗号
+            trim_json(&mut output); // 移除最后的逗号
             output += &format!("\n{}]", " ".repeat(indent));
         }
         Value::String(s) => {
@@ -50,6 +51,15 @@ pub fn pretty_json_with_indent(json: &Value, indent: usize) -> String {
         }
     }
     output
+}
+
+fn trim_json(line: &mut String) {
+    if line.ends_with('\n') {
+        line.pop();
+        trim_json(line);
+    } else if line.ends_with(',') {
+        line.pop();
+    }
 }
 
 pub(crate) fn add_tree_items(tree: &mut Tree, json: &Value, path: String) {
@@ -98,7 +108,7 @@ pub(crate) fn parse_path_chain(item: &TreeItem) -> Stack<String> {
 
     let mut temp = Some(item);
     let mut next;
-    while let Some(node) = temp{
+    while let Some(node) = temp {
         if node.is_root() {
             break;
         }
