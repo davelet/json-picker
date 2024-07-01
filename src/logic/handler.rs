@@ -211,8 +211,14 @@ fn listen_on_action() {
                 let mut bind = RESUTL_VIEW.lock().unwrap();
                 bind.set_text("");
             }
-            let bind = TREE_VIEW.lock().unwrap();
-            bind.clear()
+            {
+                let bind = TREE_VIEW.lock().unwrap();
+                bind.clear()
+            }
+            {
+                let mut search_box = TREE_SEARCH_BOX.lock().unwrap();
+                search_box.set_value("");
+            }
         });
     }
     {
