@@ -8,9 +8,10 @@ use fltk::prelude::{DisplayExt, InputExt, WidgetBase, WidgetExt};
 use serde_json::Value;
 
 use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN, START_TIMEOUT};
-use crate::data::notify_enum::{ComputeResult, ComputeStatus, NotifyType};
+use crate::data::notify_enum::{AppParam, ComputeResult, ComputeStatus, NotifyType};
 use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
 use crate::logic::json_handle;
+use crate::logic::system_startup::store_location;
 
 pub(crate) fn handle_event(app: &App) {
     window_resize();
@@ -31,9 +32,16 @@ fn window_resize() {
     let mut whole_view = WHOLE_VIEW.lock().unwrap();
     let mut binding = APP_WINDOW.lock().unwrap();
     let window = binding.get_window();
-    window.handle(move |_, e| match e {
+    window.handle(move |w, e| match e {
         Event::Resize => {
             whole_view.resize_with_auto_detect_size();
+            let (x, y, w, h) = (w.x(), w.y(), w.w(), w.h());
+            CHANNEL.0.clone().send(NotifyType::AppParams(AppParam::WindowSize(x, y, w, h)));
+            true
+        }
+        Event::Move => {
+            let (x, y, w, h) = (w.x(), w.y(), w.w(), w.h());
+            CHANNEL.0.clone().send(NotifyType::AppParams(AppParam::WindowSize(x, y, w, h)));
             true
         }
         _ => false,
@@ -134,6 +142,13 @@ fn listen_on_events(app: &App) {
 
                     CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Normal));
                     CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
+                }
+                NotifyType::AppParams(param) => {
+                    match param {
+                        AppParam::WindowSize(x, y, w, h) => {
+                            store_location(x as i64, y as i64, w as i64, h as i64);
+                        }
+                    }
                 }
                 _ => {}
             }

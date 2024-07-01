@@ -19,8 +19,6 @@ fn main() {
         let mut window = APP_WINDOW.lock().unwrap();
         let wind = window.get_window();
         wind.make_resizable(true);
-        // let image = image::PngImage::load("assets/icon.png").unwrap();
-        // wind.set_icon(Some(image));
         wind.show();
     }
 
