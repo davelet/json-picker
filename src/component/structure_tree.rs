@@ -1,17 +1,13 @@
-use std::rc::Rc;
-use std::sync::Arc;
-
 use chrono::{Duration, Local};
 use fltk::enums::Color;
 use fltk::group::{Pack, PackType};
 use fltk::prelude::{GroupExt, WidgetExt};
-use fltk::tree::{Tree, TreeSelect};
+use fltk::tree::TreeSelect;
 use serde_json::Value;
-use crate::component::search_bar::SearchBar;
 
-use crate::data::constants::{ACTION_BUTTON_COUNT, ACTION_BUTTON_HEIGHT, SEARCH_BAR_HEIGHT, SEARCH_BTN_WIDTH};
+use crate::data::constants::SEARCH_BAR_HEIGHT;
 use crate::data::notify_enum::{ComputeStatus, NotifyType};
-use crate::data::singleton::{ACTION_BTNS, CHANNEL, TREE_MAIN, TREE_SEARCH_BAR};
+use crate::data::singleton::{CHANNEL, TREE_MAIN, TREE_SEARCH_BAR};
 use crate::logic::json_handle::{add_tree_items, parse_path_chain};
 
 pub(crate) struct JsonStructure {
@@ -102,6 +98,7 @@ impl JsonStructure {
                     item.set_label_bgcolor(Color::Yellow);
                 }
             }
+            return true
         };
         false
     }

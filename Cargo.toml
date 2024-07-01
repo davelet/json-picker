@@ -2,6 +2,7 @@
 name = "json-hand"
 version = "0.0.3"
 edition = "2021"
+description = "An applicaton to pick part field from a whole json"
 
 [dependencies]
 fltk = "^1.4"
@@ -16,3 +17,13 @@ fltk-theme = "0.7.2"
 clipboard = "0.5.0"
 # [patch.crates-io]
 # fltk = { git = "https://github.com/fltk-rs/fltk-rs" } # https://github.com/fltk-rs/fltk-rs/issues/1544
+
+[package.metadata.bundle]
+# 这里是 cargo-bundle 特定的配置
+identifier = "learn.self.davelet"
+name = "JSON PICKER"
+short_version_string = "0.4.0"
+bundle_identifier = "json.hand.learn.self.davelet"
+bundle_name = "JSON HAND"
+application_category = "public.app-category.developer-tools"
+icon = ["assets/icon.png"]

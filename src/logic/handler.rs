@@ -125,10 +125,12 @@ fn listen_on_events(app: &App) {
                     CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
                 }
                 NotifyType::SearchTree(pattern) => {
-                    TREE_VIEW.lock().unwrap().search_nodes(pattern);
-                    let mut bind = APP_WINDOW.lock().unwrap();
-                    let w = bind.get_window();
-                    w.redraw();
+                    let set_color = TREE_VIEW.lock().unwrap().search_nodes(pattern);
+                    if set_color {
+                        let mut bind = APP_WINDOW.lock().unwrap();
+                        let w = bind.get_window();
+                        w.redraw();
+                    }
 
                     CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Normal));
                     CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
@@ -170,7 +172,7 @@ fn listen_on_action() {
             }
             let mut bind = APP_WINDOW.lock().unwrap();
             let win = bind.get_window();
-            win.redraw();// save as above...why
+            win.redraw(); // save as above...why
         })
     }
     {
