@@ -1,6 +1,6 @@
 use fltk::app;
 use fltk::app::Scheme;
-use fltk::prelude::{GroupExt, WidgetExt};
+use fltk::prelude::{GroupExt, WidgetExt, WindowExt};
 use fltk_theme::{color_themes, ColorTheme};
 
 use crate::data::singleton::APP_WINDOW;
@@ -13,16 +13,16 @@ mod logic;
 fn main() {
     let mut app = app::App::default();
     app.set_scheme(Scheme::Plastic);
-    // let theme = ColorTheme::new(color_themes::SHAKE_THEME);
-    // theme.apply();
+    let theme = ColorTheme::new(color_themes::GRAY_THEME);
+    theme.apply();
+    {
+        let mut window = APP_WINDOW.lock().unwrap();
+        let wind = window.get_window();
+        wind.make_resizable(true);
+        // let image = image::PngImage::load("assets/icon.png").unwrap();
+        // wind.set_icon(Some(image));
+        wind.show();
+    }
 
-    let mut window = APP_WINDOW.lock().unwrap();
-    let wind = window.get_window();
-    wind.make_resizable(true);
-    wind.show();
-
-    window_resize(wind);
-    handle_json_input();
-    make_ready();
-    listen_on_events(&app);
+    handle_event(&app);
 }
