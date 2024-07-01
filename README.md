@@ -5,3 +5,6 @@
  - json format error
  - startup parameters
  - settings
+
+# Use
+ use `cargo bundle --release` to create an app on Mac.
