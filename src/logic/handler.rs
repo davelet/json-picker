@@ -10,8 +10,10 @@ use serde_json::Value;
 use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN, START_TIMEOUT};
 use crate::data::notify_enum::{AppParam, ComputeResult, ComputeStatus, NotifyType};
 use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
+use crate::data::task_bo::HaltWaitingStatusTaskParam;
 use crate::logic::json_handle;
 use crate::logic::system_startup::store_location;
+use crate::logic::tasks::Task;
 
 pub(crate) fn handle_event(app: &App) {
     window_resize();
@@ -96,16 +98,16 @@ fn listen_on_events(app: &App) {
                         ComputeStatus::Waiting(up_time, selected_path) => {
                             let t = STATUS_TASK.0.lock();
                             if let Ok(mut t) = t {
-                                let set = t.set_halt_time(up_time);
+                                let set = t.before_execute(HaltWaitingStatusTaskParam::new(Some(up_time)));
                                 if set {
                                     let lock = COMPUTE_TASK.lock();
                                     if let Ok(mut task) = lock {
-                                        task.setup(selected_path);
+                                        task.before_execute(selected_path);
                                     }
                                     thread::spawn(move || {
                                         let x = STATUS_TASK.0.lock();
-                                        if let Ok(x) = x {
-                                            x.exec(up_time);
+                                        if let Ok(mut x) = x {
+                                            let _ = x.execute(HaltWaitingStatusTaskParam::new(Some(up_time)));
                                         } else {
                                             // reset app
                                         }
@@ -117,8 +119,8 @@ fn listen_on_events(app: &App) {
                         }
                         ComputeStatus::Computing => {
                             let lock = COMPUTE_TASK.lock();
-                            if let Ok(task) = lock {
-                                task.compute();
+                            if let Ok(mut task) = lock {
+                                let _ = task.execute(vec![]);
                             }
                         }
                         _ => {}
@@ -146,7 +148,7 @@ fn listen_on_events(app: &App) {
                 NotifyType::AppParams(param) => {
                     match param {
                         AppParam::WindowSize(x, y, w, h) => {
-                            store_location(x as i64, y as i64, w as i64, h as i64);
+                            let location = store_location(x as i64, y as i64, w as i64, h as i64);
                         }
                     }
                 }
