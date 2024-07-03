@@ -1,7 +1,6 @@
-use std::sync::{Arc, RwLock};
 use std::thread;
 
-use chrono::{DateTime, Local};
+use chrono::Local;
 use serde_json::Value;
 
 use crate::data::constants::TREE_LABEL_SPLITTER;
@@ -9,14 +8,14 @@ use crate::data::notify_enum::{ComputeStatus, NotifyType};
 use crate::data::singleton::{CHANNEL, GLOBAL_JSON};
 use crate::data::stack::Stack;
 use crate::data::task_bo::HaltWaitingStatusTaskParam;
-use crate::logic::tasks::TaskStatus::{Initialed, Pending, Processing};
+use crate::logic::tasks::TaskStatus::{Initialed, Pending};
 
 /// task trait.
 /// generic param is the type of task data
 pub(crate) trait Task<D> {
     fn new() -> Self;
     fn before_execute(&mut self, data: D) -> bool;
-    async fn execute(&mut self, data: D);
+    fn execute(&mut self, data: D);
     fn after_execute(&mut self, data: D);
     fn status(&self) -> &TaskStatus;
 }
@@ -49,37 +48,35 @@ impl Task<Vec<Stack<String>>> for ComputeOnSelectedTask {
         true
     }
 
-    async fn execute(&mut self, _data: Vec<Stack<String>>) {
+    fn execute(&mut self, _data: Vec<Stack<String>>) {
         let mut cp = self.selected_path.clone();
         if cp.len() == 0 { return; }
         thread::spawn(move || {
             let mut guard = GLOBAL_JSON.lock().unwrap();
             let mut json = (*guard).get_mut().clone();
-            if cp.len() > 0 {
-                let mut path = &mut cp[0];
-                let mut c = path.pop();
-                while let Some(ref n) = c {
-                    if !n.contains(TREE_LABEL_SPLITTER) {
-                        c = path.pop();
-                        continue;
-                    }
-                    let field = n.split_once(TREE_LABEL_SPLITTER).unwrap().0;
-                    match json {
-                        Value::Object(ref map) => {
-                            let np = map.get(field);
-                            if let Some(vv) = np {
-                                json = (*vv).clone();
-                            }
-                        }
-                        Value::Array(ref arr) => {
-                            let index = field.parse::<usize>().unwrap();
-                            let value = &arr[index];
-                            json = value.clone();
-                        }
-                        _ => {}
-                    }
+            let mut path = &mut cp[0];// only pick the first one
+            let mut c = path.pop();
+            while let Some(ref n) = c {
+                if !n.contains(TREE_LABEL_SPLITTER) {
                     c = path.pop();
+                    continue;
                 }
+                let field = n.split_once(TREE_LABEL_SPLITTER).unwrap().0;
+                match json {
+                    Value::Object(ref map) => {
+                        let np = map.get(field);
+                        if let Some(vv) = np {
+                            json = (*vv).clone();
+                        }
+                    }
+                    Value::Array(ref arr) => {
+                        let index = field.parse::<usize>().unwrap();
+                        let value = &arr[index];
+                        json = value.clone();
+                    }
+                    _ => {}
+                }
+                c = path.pop();
             }
             CHANNEL.0.clone().send(NotifyType::SelectedTree(json));
         });
@@ -119,7 +116,7 @@ impl Task<HaltWaitingStatusTaskParam> for HaltWaitingStatusTask {
         false
     }
 
-    async fn execute(&mut self, data: HaltWaitingStatusTaskParam) {
+    fn execute(&mut self, data: HaltWaitingStatusTaskParam) {
         let arc = self.param.update_count();
         // thread::sleep(Duration::from_secs(2));// todo time diff
 
@@ -135,8 +132,7 @@ impl Task<HaltWaitingStatusTaskParam> for HaltWaitingStatusTask {
         }
     }
 
-    fn after_execute(&mut self, data: HaltWaitingStatusTaskParam) {
-    }
+    fn after_execute(&mut self, data: HaltWaitingStatusTaskParam) {}
 
     fn status(&self) -> &TaskStatus {
         &self.status

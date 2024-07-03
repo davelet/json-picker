@@ -96,32 +96,20 @@ fn listen_on_events(app: &App) {
                     (*FOOT_SHOW.lock().unwrap()).set_status(&status);
                     match status {
                         ComputeStatus::Waiting(up_time, selected_path) => {
-                            let t = STATUS_TASK.0.lock();
-                            if let Ok(mut t) = t {
-                                let set = t.before_execute(HaltWaitingStatusTaskParam::new(Some(up_time)));
-                                if set {
-                                    let lock = COMPUTE_TASK.lock();
-                                    if let Ok(mut task) = lock {
-                                        task.before_execute(selected_path);
-                                    }
-                                    thread::spawn(move || {
-                                        let x = STATUS_TASK.0.lock();
-                                        if let Ok(mut x) = x {
-                                            let _ = x.execute(HaltWaitingStatusTaskParam::new(Some(up_time)));
-                                        } else {
-                                            // reset app
-                                        }
-                                    });
-                                }
-                            } else {
-                                // reset app
+                            let mut t = STATUS_TASK.lock().unwrap();
+                            let set = t.before_execute(HaltWaitingStatusTaskParam::new(Some(up_time)));
+                            if set {
+                                let mut task = COMPUTE_TASK.lock().unwrap();
+                                task.before_execute(selected_path);
+                                thread::spawn(move || {
+                                    let mut x = STATUS_TASK.lock().unwrap();
+                                     x.execute(HaltWaitingStatusTaskParam::new(Some(up_time)));
+                                });
                             }
                         }
                         ComputeStatus::Computing => {
-                            let lock = COMPUTE_TASK.lock();
-                            if let Ok(mut task) = lock {
-                                let _ = task.execute(vec![]);
-                            }
+                            let mut task = COMPUTE_TASK.lock().unwrap();
+                            task.execute(vec![]);
                         }
                         _ => {}
                     }
