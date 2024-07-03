@@ -40,11 +40,6 @@ fn window_resize() {
             CHANNEL.0.clone().send(NotifyType::AppParams(AppParam::WindowSize(x, y, w, h)));
             true
         }
-        Event::Move => {
-            let (x, y, w, h) = (w.x(), w.y(), w.w(), w.h());
-            CHANNEL.0.clone().send(NotifyType::AppParams(AppParam::WindowSize(x, y, w, h)));
-            true
-        }
         _ => false,
     });
 }

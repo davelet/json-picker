@@ -18,3 +18,6 @@ pub(crate) const START_TIMEOUT: f64 = 0.5;
 pub(crate) const JSON_SIZE_LIMIT: usize = 10_000_000;
 pub(crate) const JSON_SIZE_WARN: &str = "input too long";
 pub(crate) const TREE_LABEL_SPLITTER: &str = ":";
+pub(crate) const SYSTEM_PARAM_FILE_DIR: &str = "~/.json_picker";
+pub(crate) const SYSTEM_PARAM_FILE_PATH: &str = "/config.toml";
+pub(crate) const SYSTEM_PARAM_LOCATION_KEY: &str = "location";
