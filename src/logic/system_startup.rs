@@ -13,17 +13,16 @@ use crate::data::constants::{SYSTEM_PARAM_FILE_DIR, SYSTEM_PARAM_FILE_PATH, SYST
 fn input() -> DocumentMut {
     let file_path = format!("{}{}", SYSTEM_PARAM_FILE_DIR, SYSTEM_PARAM_FILE_PATH);
     let path = Path::new(&file_path);
-    let display = path.display();
 
     let mut file = match File::open(&path) {
-        Err(why) => { return DocumentMut::new() }
+        Err(_) => { return DocumentMut::new() }
         Ok(file) => file,
     };
 
     // Read the file contents into a string, returns `io::Result<usize>`
     let mut s = String::new();
     match file.read_to_string(&mut s) {
-        Err(why) => panic!("couldn't read {}: {}", display, why),
+        Err(_) => { return DocumentMut::new() }
         Ok(_) => { return DocumentMut::from_str(&*s).unwrap() }
     }
 }
@@ -38,16 +37,15 @@ fn output(toml: DocumentMut) {
         let f = File::create(SYSTEM_PARAM_FILE_PATH);
         if let Ok(mut f) = f {
             let r = f.write_all(str.as_bytes());
-            if let Err(e) = r {
-                println!("{}", e.to_string()) // todo ignore?
-            }
+            // if let Err(e) = r {
+            //     println!("{}", e.to_string()) // todo ignore?
+            // }
         }
     }
 }
 
 pub(crate) fn store_location(x: i64, y: i64, w: i64, h: i64) {
     let mut saved = input();
-    println!("toml {}", saved);
     let option = saved.get(SYSTEM_PARAM_LOCATION_KEY);
     let mut location = match option {
         None => { Table::new() }
@@ -65,4 +63,25 @@ pub(crate) fn store_location(x: i64, y: i64, w: i64, h: i64) {
     location["h"] = value(h);
     saved.insert(SYSTEM_PARAM_LOCATION_KEY, ItemTable(location));
     output(saved);
+}
+
+pub(crate) fn load_location() -> Option<(i64, i64, i64, i64)> {
+    let config = input();
+    let block = config.get(SYSTEM_PARAM_LOCATION_KEY);
+    match block {
+        None => {
+            None
+        }
+        Some(item) => {
+            if let ItemTable(t) = item {
+                let x = t["x"].as_integer().unwrap();
+                let y = t["y"].as_integer().unwrap();
+                let w = t["w"].as_integer().unwrap();
+                let h = t["h"].as_integer().unwrap();
+                Some((x, y, w, h))
+            } else {
+                None
+            }
+        }
+    }
 }

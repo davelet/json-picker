@@ -1,16 +1,15 @@
-use std::cmp::PartialEq;
 use std::thread;
 
 use chrono::Local;
-use fltk::app::App;
+use fltk::prelude::WidgetExt;
 use serde_json::Value;
 
 use crate::data::constants::TREE_LABEL_SPLITTER;
 use crate::data::notify_enum::{ComputeStatus, NotifyType};
-use crate::data::singleton::{CHANNEL, GLOBAL_JSON};
+use crate::data::singleton::{APP_WINDOW, CHANNEL, GLOBAL_JSON};
 use crate::data::stack::Stack;
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
-use crate::logic::system_startup::store_location;
+use crate::logic::system_startup::{load_location, store_location};
 use crate::logic::tasks::TaskStatus::{Initialed, Pending};
 
 /// task trait.
@@ -177,3 +176,36 @@ impl Task<AppWindowLocationTaskParam> for AppWindowLocationPersistenceTask {
     }
 }
 
+pub(crate) struct AppWindowLocationLoadTask {
+    location: Option<AppWindowLocationTaskParam>,
+}
+
+impl Task<bool> for AppWindowLocationLoadTask {
+    fn new() -> Self {
+        Self { location: None }
+    }
+
+    fn before_execute(&mut self, data: bool) -> bool {
+        let saved = load_location();
+        if let Some((x, y, w, h)) = saved {
+            self.location = Some(AppWindowLocationTaskParam::new(x, y, w, h));
+            return true;
+        }
+        false
+    }
+
+    fn execute(&mut self, data: bool) {
+        let mut window = APP_WINDOW.lock().unwrap();
+        let wind = window.get_window();
+        let data = self.location.as_ref().unwrap();
+        wind.resize(data.x() as i32, data.y() as i32, data.w() as i32, data.h() as i32);
+    }
+
+    fn after_execute(&mut self, data: bool) {
+        todo!()
+    }
+
+    fn status(&self) -> &TaskStatus {
+        todo!()
+    }
+}

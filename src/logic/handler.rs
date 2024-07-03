@@ -9,7 +9,7 @@ use serde_json::Value;
 
 use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN, START_TIMEOUT};
 use crate::data::notify_enum::{AppParam, ComputeResult, ComputeStatus, NotifyType};
-use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
+use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, LOAD_LOCATION_TASK, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
 use crate::logic::json_handle;
 use crate::logic::tasks::Task;
@@ -27,6 +27,7 @@ fn make_ready() {
     app::add_timeout3(START_TIMEOUT, |_| {
         CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
     });
+    CHANNEL.0.clone().send(NotifyType::LoadParams);
 }
 
 fn window_resize() {
@@ -37,7 +38,7 @@ fn window_resize() {
         Event::Resize => {
             whole_view.resize_with_auto_detect_size();
             let (x, y, w, h) = (w.x(), w.y(), w.w(), w.h());
-            CHANNEL.0.clone().send(NotifyType::AppParams(AppParam::WindowSize(x, y, w, h)));
+            CHANNEL.0.clone().send(NotifyType::StoreParams(AppParam::WindowSize(x, y, w, h)));
             true
         }
         _ => false,
@@ -127,7 +128,7 @@ fn listen_on_events(app: &App) {
                     CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Normal));
                     CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
                 }
-                NotifyType::AppParams(param) => {
+                NotifyType::StoreParams(param) => {
                     match param {
                         AppParam::WindowSize(x, y, w, h) => {
                             let mut task = LOCATION_TASK.lock().unwrap();
@@ -137,6 +138,12 @@ fn listen_on_events(app: &App) {
                                 task.execute(AppWindowLocationTaskParam::new(0, 0, 0, 0));
                             }
                         }
+                    }
+                }
+                NotifyType::LoadParams => {
+                   let mut task = LOAD_LOCATION_TASK.lock().unwrap();
+                    if task.before_execute(true) {
+                        task.execute(true)
                     }
                 }
                 _ => {}
