@@ -9,10 +9,9 @@ use serde_json::Value;
 
 use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN, START_TIMEOUT};
 use crate::data::notify_enum::{AppParam, ComputeResult, ComputeStatus, NotifyType};
-use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
-use crate::data::task_bo::HaltWaitingStatusTaskParam;
+use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
+use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
 use crate::logic::json_handle;
-use crate::logic::system_startup::store_location;
 use crate::logic::tasks::Task;
 
 pub(crate) fn handle_event(app: &App) {
@@ -103,7 +102,7 @@ fn listen_on_events(app: &App) {
                                 task.before_execute(selected_path);
                                 thread::spawn(move || {
                                     let mut x = STATUS_TASK.lock().unwrap();
-                                     x.execute(HaltWaitingStatusTaskParam::new(Some(up_time)));
+                                    x.execute(HaltWaitingStatusTaskParam::new(Some(up_time)));
                                 });
                             }
                         }
@@ -136,7 +135,12 @@ fn listen_on_events(app: &App) {
                 NotifyType::AppParams(param) => {
                     match param {
                         AppParam::WindowSize(x, y, w, h) => {
-                            let location = store_location(x as i64, y as i64, w as i64, h as i64);
+                            let mut task = LOCATION_TASK.lock().unwrap();
+                            let location_task_param = AppWindowLocationTaskParam::new(x as i64, y as i64, w as i64, h as i64);
+                            let x1 = task.before_execute(location_task_param);
+                            if x1 {
+                                task.execute(AppWindowLocationTaskParam::new(0, 0, 0, 0));
+                            }
                         }
                     }
                 }

@@ -1,13 +1,16 @@
+use std::cmp::PartialEq;
 use std::thread;
 
 use chrono::Local;
+use fltk::app::App;
 use serde_json::Value;
 
 use crate::data::constants::TREE_LABEL_SPLITTER;
 use crate::data::notify_enum::{ComputeStatus, NotifyType};
 use crate::data::singleton::{CHANNEL, GLOBAL_JSON};
 use crate::data::stack::Stack;
-use crate::data::task_bo::HaltWaitingStatusTaskParam;
+use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
+use crate::logic::system_startup::store_location;
 use crate::logic::tasks::TaskStatus::{Initialed, Pending};
 
 /// task trait.
@@ -54,7 +57,7 @@ impl Task<Vec<Stack<String>>> for ComputeOnSelectedTask {
         thread::spawn(move || {
             let mut guard = GLOBAL_JSON.lock().unwrap();
             let mut json = (*guard).get_mut().clone();
-            let mut path = &mut cp[0];// only pick the first one
+            let mut path = &mut cp[0]; // only pick the first one
             let mut c = path.pop();
             while let Some(ref n) = c {
                 if !n.contains(TREE_LABEL_SPLITTER) {
@@ -138,3 +141,39 @@ impl Task<HaltWaitingStatusTaskParam> for HaltWaitingStatusTask {
         &self.status
     }
 }
+
+pub(crate) struct AppWindowLocationPersistenceTask {
+    status: TaskStatus,
+    location: Option<AppWindowLocationTaskParam>,
+}
+
+impl Task<AppWindowLocationTaskParam> for AppWindowLocationPersistenceTask {
+    fn new() -> Self {
+        Self {
+            status: Initialed,
+            location: None,
+        }
+    }
+
+    fn before_execute(&mut self, data: AppWindowLocationTaskParam) -> bool {
+        if let Some(p) = &self.location {
+            if p == data {
+                return false;
+            }
+        }
+        self.location = Some(data);
+        true
+    }
+
+    fn execute(&mut self, data: AppWindowLocationTaskParam) {
+        let data = self.location.as_ref().unwrap();
+        store_location(data.x(), data.y(), data.w(), data.h());
+    }
+
+    fn after_execute(&mut self, data: AppWindowLocationTaskParam) {}
+
+    fn status(&self) -> &TaskStatus {
+        &self.status
+    }
+}
+
