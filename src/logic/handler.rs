@@ -12,7 +12,7 @@ use crate::data::notify_enum::{AppParam, ComputeResult, ComputeStatus, NotifyTyp
 use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, LOAD_LOCATION_TASK, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
 use crate::logic::json_handle;
-use crate::logic::tasks::Task;
+use crate::logic::workers::ui_tasks::Task;
 
 pub(crate) fn handle_event(app: &App) {
     window_resize();
@@ -66,8 +66,10 @@ fn handle_json_input() {
                         let guard = GLOBAL_JSON.lock().unwrap();
                         (*guard).set(json.clone());
                         TREE_VIEW.lock().unwrap().set_tree(&json);
-                        RESUTL_VIEW.lock().unwrap().set_text(&*json_handle::pretty_json(&json));
+                        let value = json_handle::pretty_json(&json);
+                        RESUTL_VIEW.lock().unwrap().set_text(&*value);
                         s.send(NotifyType::Result(ComputeResult::Normal));
+                        s.send(NotifyType::StoreParams(AppParam::JsonValue(value)));
                     }
                     Err(er) => {
                         TREE_VIEW.lock().unwrap().clear();
@@ -137,6 +139,9 @@ fn listen_on_events(app: &App) {
                             if x1 {
                                 task.execute(AppWindowLocationTaskParam::new(0, 0, 0, 0));
                             }
+                        }
+                        AppParam::JsonValue(json) => {
+
                         }
                     }
                 }

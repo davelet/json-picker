@@ -10,7 +10,7 @@ use crate::data::singleton::{APP_WINDOW, CHANNEL, GLOBAL_JSON};
 use crate::data::stack::Stack;
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
 use crate::logic::system_startup::{load_location, store_location};
-use crate::logic::tasks::TaskStatus::{Initialed, Pending};
+use crate::logic::workers::ui_tasks::TaskStatus::{Initialed, Pending};
 
 /// task trait.
 /// generic param is the type of task data

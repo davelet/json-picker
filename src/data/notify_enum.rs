@@ -35,5 +35,6 @@ pub(crate) enum ComputeResult {
 #[derive(Clone, AsRefStr)]
 pub(crate) enum AppParam {
     WindowSize(i32, i32, i32, i32),
+    JsonValue(String),
 
 }
