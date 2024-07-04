@@ -24,9 +24,9 @@ pub(crate) fn handle_event(app: &App) {
 }
 
 fn make_ready() {
-    app::add_timeout3(START_TIMEOUT, |_| {
-        CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
-    });
+    // app::add_timeout3(START_TIMEOUT, |_| {
+    //     CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
+    // });
     CHANNEL.0.clone().send(NotifyType::LoadParams);
 }
 
@@ -145,6 +145,7 @@ fn listen_on_events(app: &App) {
                     if task.before_execute(true) {
                         task.execute(true)
                     }
+                    CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
                 }
                 _ => {}
             }
