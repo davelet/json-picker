@@ -6,15 +6,15 @@ use serde_json::Value;
 
 use crate::data::constants::TREE_LABEL_SPLITTER;
 use crate::data::notify_enum::{ComputeStatus, NotifyType};
-use crate::data::singleton::{APP_WINDOW, CHANNEL, GLOBAL_JSON};
+use crate::data::singleton::{CHANNEL, GLOBAL_JSON};
 use crate::data::stack::Stack;
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
-use crate::logic::system_startup::{load_location, store_location};
+use crate::logic::system_startup::store_location;
 use crate::logic::workers::ui_tasks::TaskStatus::{Initialed, Pending};
 
 /// task trait.
 /// generic param is the type of task data
-pub(crate) trait Task<D> {
+pub(crate) trait UiTask<D> {
     fn new() -> Self;
     fn before_execute(&mut self, data: D) -> bool;
     fn execute(&mut self, data: D);
@@ -36,7 +36,7 @@ pub(crate) struct ComputeOnSelectedTask {
     selected_path: Vec<Stack<String>>,
 }
 
-impl Task<Vec<Stack<String>>> for ComputeOnSelectedTask {
+impl UiTask<Vec<Stack<String>>> for ComputeOnSelectedTask {
     fn new() -> Self {
         ComputeOnSelectedTask {
             selected_path: vec![],
@@ -96,7 +96,7 @@ pub(crate) struct HaltWaitingStatusTask {
     param: HaltWaitingStatusTaskParam,
 }
 
-impl Task<HaltWaitingStatusTaskParam> for HaltWaitingStatusTask {
+impl UiTask<HaltWaitingStatusTaskParam> for HaltWaitingStatusTask {
     fn new() -> Self {
         HaltWaitingStatusTask {
             param: HaltWaitingStatusTaskParam::new(None),
@@ -146,7 +146,7 @@ pub(crate) struct AppWindowLocationPersistenceTask {
     location: Option<AppWindowLocationTaskParam>,
 }
 
-impl Task<AppWindowLocationTaskParam> for AppWindowLocationPersistenceTask {
+impl UiTask<AppWindowLocationTaskParam> for AppWindowLocationPersistenceTask {
     fn new() -> Self {
         Self {
             status: Initialed,
@@ -176,32 +176,28 @@ impl Task<AppWindowLocationTaskParam> for AppWindowLocationPersistenceTask {
     }
 }
 
-pub(crate) struct AppWindowLocationLoadTask {
-    location: Option<AppWindowLocationTaskParam>,
+pub(crate) struct ParsedJsonStringPersistenceTask {
+    status: TaskStatus,
+    value: String,
 }
 
-impl Task<bool> for AppWindowLocationLoadTask {
+impl UiTask<String> for ParsedJsonStringPersistenceTask {
     fn new() -> Self {
-        Self { location: None }
-    }
-
-    fn before_execute(&mut self, data: bool) -> bool {
-        let saved = load_location();
-        if let Some((x, y, w, h)) = saved {
-            self.location = Some(AppWindowLocationTaskParam::new(x, y, w, h));
-            return true;
+        Self {
+            status: Initialed,
+            value: "".into(),
         }
-        false
     }
 
-    fn execute(&mut self, data: bool) {
-        let mut window = APP_WINDOW.lock().unwrap();
-        let wind = window.get_window();
-        let data = self.location.as_ref().unwrap();
-        wind.resize(data.x() as i32, data.y() as i32, data.w() as i32, data.h() as i32);
+    fn before_execute(&mut self, data: String) -> bool {
+        todo!()
     }
 
-    fn after_execute(&mut self, data: bool) {
+    fn execute(&mut self, data: String) {
+        todo!()
+    }
+
+    fn after_execute(&mut self, data: String) {
         todo!()
     }
 

@@ -16,7 +16,8 @@ use crate::component::structure_tree::JsonStructure;
 use crate::component::window::AppWindow;
 use crate::data::constants::{ACTION_BUTTON_COUNT, ACTION_BUTTON_HEIGHT, ACTION_BUTTON_LABELS, COLUMN_COUNT, CONTENT_HEIGHT, DEFAULT_HEIGHT, DEFAULT_WIDTH, SEARCH_BAR_HEIGHT, SEARCH_BTN_LABEL, SEARCH_BTN_WIDTH};
 use crate::data::notify_enum::NotifyType;
-use crate::logic::workers::ui_tasks::{AppWindowLocationLoadTask, AppWindowLocationPersistenceTask, ComputeOnSelectedTask, HaltWaitingStatusTask, Task};
+use crate::logic::workers::startup_tasks::{AppWindowLocationLoadTask, StartupTask};
+use crate::logic::workers::ui_tasks::{AppWindowLocationPersistenceTask, ComputeOnSelectedTask, HaltWaitingStatusTask, ParsedJsonStringPersistenceTask, UiTask};
 
 lazy_static::lazy_static! {
     pub(crate) static ref APP_WINDOW: Mutex<AppWindow> = Mutex::new(AppWindow::new());
@@ -41,6 +42,7 @@ lazy_static::lazy_static! {
     pub(crate) static ref COMPUTE_TASK: Mutex<ComputeOnSelectedTask> = Mutex::new(ComputeOnSelectedTask::new());
     pub(crate) static ref LOCATION_TASK: Mutex<AppWindowLocationPersistenceTask> = Mutex::new(AppWindowLocationPersistenceTask::new());
     pub(crate) static ref LOAD_LOCATION_TASK: Mutex<AppWindowLocationLoadTask> = Mutex::new(AppWindowLocationLoadTask::new());
+    pub(crate) static ref JSON_SAVE_TASK: Mutex<ParsedJsonStringPersistenceTask> = Mutex::new(ParsedJsonStringPersistenceTask::new());
     pub(crate) static ref GLOBAL_JSON: Mutex<Cell<Value>> = Mutex::new(Cell::new(Null));
 
 }

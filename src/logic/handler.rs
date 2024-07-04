@@ -9,10 +9,11 @@ use serde_json::Value;
 
 use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN, START_TIMEOUT};
 use crate::data::notify_enum::{AppParam, ComputeResult, ComputeStatus, NotifyType};
-use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, LOAD_LOCATION_TASK, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
+use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, JSON_SAVE_TASK, LOAD_LOCATION_TASK, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
 use crate::logic::json_handle;
-use crate::logic::workers::ui_tasks::Task;
+use crate::logic::workers::startup_tasks::StartupTask;
+use crate::logic::workers::ui_tasks::UiTask;
 
 pub(crate) fn handle_event(app: &App) {
     window_resize();
@@ -141,7 +142,10 @@ fn listen_on_events(app: &App) {
                             }
                         }
                         AppParam::JsonValue(json) => {
-
+                            let mut task = JSON_SAVE_TASK.lock().unwrap();
+                            if task.before_execute(json) {
+                                task.execute("".into());
+                            }
                         }
                     }
                 }
@@ -235,6 +239,16 @@ fn listen_on_action() {
             {
                 let mut search_box = TREE_SEARCH_BOX.lock().unwrap();
                 search_box.set_value("");
+            }
+            {
+                let mut task = JSON_SAVE_TASK.lock().unwrap();
+                if task.before_execute("".into()) {
+                    task.execute("".into());
+                }
+            }
+            {
+                let guard = GLOBAL_JSON.lock().unwrap();
+                (*guard).set("".into());
             }
         });
     }
