@@ -113,7 +113,7 @@ impl UiTask<HaltWaitingStatusTaskParam> for HaltWaitingStatusTask {
             Ok(mut i) => {
                 if *i > 10 {
                     return false;
-                } // todo to reset app
+                } // to reset app?
 
                 let t = data.halt_time().unwrap();
                 self.param.with_time(t);

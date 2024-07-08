@@ -1,4 +1,4 @@
-use std::thread;
+use std::{env, thread};
 
 use clipboard::{ClipboardContext, ClipboardProvider};
 use fltk::app::App;
@@ -8,7 +8,7 @@ use serde_json::Value;
 
 use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
 use crate::data::notify_enum::{AppParam, ComputeResult, ComputeStatus, NotifyType};
-use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, JSON_SAVE_TASK, LOAD_LOCATION_TASK, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
+use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, HOME_DIR, JSON_INPUT_BOX, JSON_SAVE_TASK, LOAD_LOCATION_TASK, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
 use crate::logic::json_handle;
 use crate::logic::workers::startup_tasks::StartupTask;
@@ -27,7 +27,11 @@ fn make_ready() {
     // app::add_timeout3(START_TIMEOUT, |_| {
     //     CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
     // });
-    CHANNEL.0.clone().send(NotifyType::LoadParams);
+    if let Ok(home) = env::var("HOME") {
+        let user_home = HOME_DIR.lock().unwrap();
+        user_home.set(home);
+        CHANNEL.0.clone().send(NotifyType::LoadParams);
+    }
 }
 
 fn window_resize() {

@@ -45,4 +45,5 @@ lazy_static::lazy_static! {
     pub(crate) static ref JSON_SAVE_TASK: Mutex<ParsedJsonStringPersistenceTask> = Mutex::new(ParsedJsonStringPersistenceTask::new());
     pub(crate) static ref GLOBAL_JSON: Mutex<Cell<Value>> = Mutex::new(Cell::new(Null));
 
+    pub(crate) static ref HOME_DIR: Mutex<Cell<String>> = Mutex::new(Cell::new("".into()));
 }
