@@ -20,6 +20,9 @@ fn main() {
         let mut window = APP_WINDOW.lock().unwrap();
         let wind = window.get_window();
         wind.make_resizable(true);
+
+
+
         wind.show();
     }
 
