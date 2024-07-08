@@ -1,6 +1,7 @@
+use std::env;
 use fltk::app;
 use fltk::app::Scheme;
-use fltk::prelude::{GroupExt, WidgetExt, WindowExt};
+use fltk::prelude::{GroupExt, WidgetExt};
 use fltk_theme::{color_themes, ColorTheme};
 
 use crate::data::singleton::APP_WINDOW;
@@ -11,6 +12,7 @@ mod data;
 mod logic;
 
 fn main() {
+    env::set_var("RUST_BACKTRACE", "full");
     let mut app = app::App::default();
     app.set_scheme(Scheme::Plastic);
     let theme = ColorTheme::new(color_themes::GRAY_THEME);

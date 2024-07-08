@@ -1,13 +1,12 @@
 use std::thread;
 
 use clipboard::{ClipboardContext, ClipboardProvider};
-use fltk::app;
 use fltk::app::App;
 use fltk::enums::Event;
 use fltk::prelude::{DisplayExt, InputExt, WidgetBase, WidgetExt};
 use serde_json::Value;
 
-use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN, START_TIMEOUT};
+use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
 use crate::data::notify_enum::{AppParam, ComputeResult, ComputeStatus, NotifyType};
 use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, JSON_INPUT_BOX, JSON_SAVE_TASK, LOAD_LOCATION_TASK, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
@@ -150,10 +149,8 @@ fn listen_on_events(app: &App) {
                     }
                 }
                 NotifyType::LoadParams => {
-                   let mut task = LOAD_LOCATION_TASK.lock().unwrap();
-                    if task.before_execute(true) {
-                        task.execute(true)
-                    }
+                    let mut task = LOAD_LOCATION_TASK.lock().unwrap();
+                    task.execute();
                     CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
                 }
                 _ => {}
@@ -165,7 +162,7 @@ fn listen_on_events(app: &App) {
 fn listen_on_action() {
     {
         let mut btns = ACTION_BTNS.lock().unwrap();
-        let mut parse_btn = &mut btns[0];
+        let parse_btn = &mut btns[0];
         parse_btn.set_callback(|_| {
             let mut bind = APP_WINDOW.lock().unwrap();
             let w = bind.get_window();
@@ -174,7 +171,7 @@ fn listen_on_action() {
     }
     {
         let mut btns = ACTION_BTNS.lock().unwrap();
-        let mut search_btn = &mut btns[1];
+        let search_btn = &mut btns[1];
         search_btn.set_callback(|_| {
             let mut bar = TREE_SEARCH_BAR.lock().unwrap().get_bar();
             let mut tree = TREE_MAIN.lock().unwrap();
@@ -198,9 +195,9 @@ fn listen_on_action() {
     }
     {
         let mut btns = ACTION_BTNS.lock().unwrap();
-        let mut copy_btn = &mut btns[2];
+        let copy_btn = &mut btns[2];
         copy_btn.set_callback(|_| {
-            let mut bind = RESUTL_VIEW.lock().unwrap();
+            let bind = RESUTL_VIEW.lock().unwrap();
             let buffer = bind.text();
             if buffer.trim().len() == 0 {
                 CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from("didn't copy: empty content"))));
@@ -222,10 +219,10 @@ fn listen_on_action() {
     }
     {
         let mut btns = ACTION_BTNS.lock().unwrap();
-        let mut clear_btn = &mut btns[3];
+        let clear_btn = &mut btns[3];
         clear_btn.set_callback(|_| {
             {
-                let mut bind = JSON_INPUT_BOX.lock().unwrap();
+                let bind = JSON_INPUT_BOX.lock().unwrap();
                 bind.buffer().unwrap().set_text("");
             }
             {

@@ -3,6 +3,7 @@
 
  # TODO
  - startup parameters 记住大小位置内容
+ - startup animation (picture)
  - settings
 
 # Use

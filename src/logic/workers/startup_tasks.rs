@@ -1,41 +1,46 @@
-use fltk::prelude::WidgetExt;
-use crate::data::singleton::APP_WINDOW;
-use crate::data::task_bo::AppWindowLocationTaskParam;
-use crate::logic::system_startup::load_location;
-use crate::logic::workers::ui_tasks::UiTask;
+use crate::{data::singleton::APP_WINDOW, logic::system_startup::load_location};
+use fltk::prelude::{DisplayExt, WidgetExt};
+use crate::data::singleton::{ACTION_BTNS, JSON_INPUT_BOX};
+use crate::logic::system_startup::load_snapshot;
 
-pub(crate) trait StartupTask<D> {
+pub(crate) trait StartupTask {
     fn new() -> Self;
-    fn before_execute(&mut self, data: D) -> bool;
-    fn execute(&mut self, data: D);
+    fn execute(&mut self);
 }
 
-pub(crate) struct AppWindowLocationLoadTask {
-    location: Option<AppWindowLocationTaskParam>,
-}
+pub(crate) struct AppWindowLocationLoadTask;
 
-impl StartupTask<bool> for AppWindowLocationLoadTask {
+impl StartupTask for AppWindowLocationLoadTask {
     fn new() -> Self {
-        Self { location: None }
+        Self
     }
 
-    fn before_execute(&mut self, _data: bool) -> bool {
-        let saved = load_location();
-        if let Some((x, y, w, h)) = saved {
-            self.location = Some(AppWindowLocationTaskParam::new(x, y, w, h));
-            return true;
+    fn execute(&mut self) {
+        let data = load_location();
+        if let Some((x, y, w, h)) = data {
+            let mut window = APP_WINDOW.lock().unwrap();
+            let wind = window.get_window();
+            wind.resize(
+                x as i32,
+                y as i32,
+                w as i32,
+                h as i32,
+            );
         }
-        false
-    }
 
-    fn execute(&mut self, _data: bool) {
-        let mut window = APP_WINDOW.lock().unwrap();
-        let wind = window.get_window();
-        let data = self.location.as_ref().unwrap();
-        wind.resize(data.x() as i32, data.y() as i32, data.w() as i32, data.h() as i32);
+        let json = load_snapshot();
+        if let Some(json) = json {
+            {
+                let inbox = JSON_INPUT_BOX.lock().unwrap();
+                let mut buffer = inbox.buffer().unwrap();
+                buffer.set_text(&json);
+            }
+            {
+                let mut btns = ACTION_BTNS.lock().unwrap();
+                let parse_btn = &mut btns[0];
+                // parse_btn.do_callback();
+                let _ = parse_btn.take_focus();
+            }
+        }
     }
-
 }
-
-
-
