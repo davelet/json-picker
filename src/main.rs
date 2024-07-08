@@ -1,4 +1,3 @@
-use std::env;
 use fltk::app;
 use fltk::app::Scheme;
 use fltk::prelude::{GroupExt, WidgetExt};
@@ -12,7 +11,7 @@ mod data;
 mod logic;
 
 fn main() {
-    env::set_var("RUST_BACKTRACE", "full");
+    // std::env::set_var("RUST_BACKTRACE", "full");
     let mut app = app::App::default();
     app.set_scheme(Scheme::Plastic);
     let theme = ColorTheme::new(color_themes::GRAY_THEME);

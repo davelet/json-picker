@@ -1,7 +1,7 @@
-use crate::{data::singleton::APP_WINDOW, logic::system_startup::load_location};
+use crate::{data::singleton::APP_WINDOW, logic::app_startup::load_location};
 use fltk::prelude::{DisplayExt, WidgetExt};
 use crate::data::singleton::{ACTION_BTNS, JSON_INPUT_BOX};
-use crate::logic::system_startup::load_snapshot;
+use crate::logic::app_startup::load_snapshot;
 
 pub(crate) trait StartupTask {
     fn new() -> Self;

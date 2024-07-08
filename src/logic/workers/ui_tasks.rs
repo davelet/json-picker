@@ -8,7 +8,7 @@ use crate::data::notify_enum::{ComputeStatus, NotifyType};
 use crate::data::singleton::{CHANNEL, GLOBAL_JSON};
 use crate::data::stack::Stack;
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
-use crate::logic::system_startup::{store_location, store_snapshot};
+use crate::logic::app_startup::{store_location, store_snapshot};
 use crate::logic::workers::ui_tasks::TaskStatus::{Initialed, Pending};
 
 /// task trait.
