@@ -11,7 +11,9 @@ pub(crate) enum NotifyType {
     Status(ComputeStatus),
     Result(ComputeResult),
     SelectedTree(Value),
-    SearchTree(String)
+    SearchTree(String),
+    StoreParams(AppParam),
+    LoadParams
 }
 unsafe impl Send for NotifyType{}
 unsafe impl Sync for NotifyType{}
@@ -28,4 +30,11 @@ pub(crate) enum ComputeStatus {
 pub(crate) enum ComputeResult {
     Normal,
     Error(String),
+}
+
+#[derive(Clone, AsRefStr)]
+pub(crate) enum AppParam {
+    WindowSize(i32, i32, i32, i32),
+    JsonValue(String),
+
 }

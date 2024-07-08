@@ -16,7 +16,8 @@ use crate::component::structure_tree::JsonStructure;
 use crate::component::window::AppWindow;
 use crate::data::constants::{ACTION_BUTTON_COUNT, ACTION_BUTTON_HEIGHT, ACTION_BUTTON_LABELS, COLUMN_COUNT, CONTENT_HEIGHT, DEFAULT_HEIGHT, DEFAULT_WIDTH, SEARCH_BAR_HEIGHT, SEARCH_BTN_LABEL, SEARCH_BTN_WIDTH};
 use crate::data::notify_enum::NotifyType;
-use crate::logic::tasks::{ComputeOnSelectedTask, HaltWaitingStatusTask};
+use crate::logic::workers::startup_tasks::{AppWindowLocationLoadTask, StartupTask};
+use crate::logic::workers::ui_tasks::{AppWindowLocationPersistenceTask, ComputeOnSelectedTask, HaltWaitingStatusTask, ParsedJsonStringPersistenceTask, UiTask};
 
 lazy_static::lazy_static! {
     pub(crate) static ref APP_WINDOW: Mutex<AppWindow> = Mutex::new(AppWindow::new());
@@ -37,8 +38,12 @@ lazy_static::lazy_static! {
     pub(crate) static ref TREE_SEARCH_BAR: Mutex<SearchBar> = Mutex::new(SearchBar::new(DEFAULT_WIDTH / COLUMN_COUNT));
 
     pub(crate) static ref CHANNEL: (fltk::app::Sender<NotifyType>, fltk::app::Receiver<NotifyType>) = fltk::app::channel();
-    pub(crate) static ref STATUS_TASK: (Mutex<HaltWaitingStatusTask>,) = (Mutex::new(HaltWaitingStatusTask::new()), );
+    pub(crate) static ref STATUS_TASK: Mutex<HaltWaitingStatusTask> = Mutex::new(HaltWaitingStatusTask::new());
     pub(crate) static ref COMPUTE_TASK: Mutex<ComputeOnSelectedTask> = Mutex::new(ComputeOnSelectedTask::new());
+    pub(crate) static ref LOCATION_TASK: Mutex<AppWindowLocationPersistenceTask> = Mutex::new(AppWindowLocationPersistenceTask::new());
+    pub(crate) static ref LOAD_LOCATION_TASK: Mutex<AppWindowLocationLoadTask> = Mutex::new(AppWindowLocationLoadTask::new());
+    pub(crate) static ref JSON_SAVE_TASK: Mutex<ParsedJsonStringPersistenceTask> = Mutex::new(ParsedJsonStringPersistenceTask::new());
     pub(crate) static ref GLOBAL_JSON: Mutex<Cell<Value>> = Mutex::new(Cell::new(Null));
 
+    pub(crate) static ref HOME_DIR: Mutex<Cell<String>> = Mutex::new(Cell::new("".into()));
 }

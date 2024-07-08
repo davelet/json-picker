@@ -1,6 +1,6 @@
 [package]
 name = "json-hand"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2021"
 description = "An applicaton to pick part field from a whole json"
 
@@ -15,6 +15,7 @@ regex = "1.10.4"
 chrono = "0.4.38"
 fltk-theme = "0.7.2"
 clipboard = "0.5.0"
+toml_edit = "0.22.14"
 # [patch.crates-io]
 # fltk = { git = "https://github.com/fltk-rs/fltk-rs" } # https://github.com/fltk-rs/fltk-rs/issues/1544
 
