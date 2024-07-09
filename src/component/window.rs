@@ -47,6 +47,7 @@ impl StartupWindow {
         image.scale(200, 200, true, true);
         frame.set_image(Some(image));
         window.end();
+        window.set_border(false);
 
         StartupWindow { window }
     }
