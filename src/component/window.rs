@@ -36,12 +36,18 @@ pub(crate) struct StartupWindow {
 impl StartupWindow {
     pub(crate) fn new(width: i32, height: i32) -> Self {
         let mut window = Window::default().with_size(width, height);
-        let mut frame = Frame::default().with_size(360, 260).center_of(&window);
+
+        let mut title_frame = Frame::default().with_size(width, (height as f64 * 0.2) as i32).with_label(APP_NAME);
+        title_frame.set_label_size(30);
+
+        let scale = 0.7;
+        let mut frame = Frame::default().with_size((width as f64 * scale) as i32, (height as f64 * scale) as i32).center_of(&window);
         frame.set_frame(FrameType::EngravedBox);
         let mut image = PngImage::load("assets/icon.png").unwrap();
         image.scale(200, 200, true, true);
         frame.set_image(Some(image));
         window.end();
+
         StartupWindow { window }
     }
 
@@ -54,7 +60,7 @@ impl StartupWindow {
         let w = window.w();
         let h = window.h();
         let x = x as i32 / 2 - w / 2;
-        let y = y as i32 /2 - h / 2;
+        let y = y as i32 / 2 - h / 2;
         window.resize(x, y, w, h);
     }
 }

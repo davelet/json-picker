@@ -13,7 +13,8 @@ pub(crate) enum NotifyType {
     SelectedTree(Value),
     SearchTree(String),
     StoreParams(AppParam),
-    LoadParams
+    LoadParams,
+    FinishLoading,
 }
 unsafe impl Send for NotifyType{}
 unsafe impl Sync for NotifyType{}

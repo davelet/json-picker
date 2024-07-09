@@ -8,7 +8,7 @@ use serde_json::Value;
 
 use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
 use crate::data::notify_enum::{AppParam, ComputeResult, ComputeStatus, NotifyType};
-use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, HOME_DIR, JSON_INPUT_BOX, JSON_SAVE_TASK, LOAD_LOCATION_TASK, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
+use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, HOME_DIR, JSON_INPUT_BOX, JSON_SAVE_TASK, LOAD_LOCATION_TASK, LOADING_WINDOW, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
 use crate::logic::json_handle;
 use crate::logic::workers::startup_tasks::StartupTask;
@@ -32,6 +32,7 @@ fn make_ready() {
         user_home.set(home);
         CHANNEL.0.clone().send(NotifyType::LoadParams);
     }
+    CHANNEL.0.clone().send(NotifyType::FinishLoading);
 }
 
 fn window_resize() {
@@ -156,6 +157,10 @@ fn listen_on_events(app: &App) {
                     let mut task = LOAD_LOCATION_TASK.lock().unwrap();
                     task.execute();
                     CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
+                }
+                NotifyType::FinishLoading => {
+                    APP_WINDOW.lock().unwrap().get_window().show();
+                    LOADING_WINDOW.lock().unwrap().get().hide();
                 }
                 _ => {}
             }
