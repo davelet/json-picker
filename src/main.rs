@@ -3,7 +3,7 @@ use fltk::app::Scheme;
 use fltk::prelude::{GroupExt, WidgetExt};
 use fltk_theme::{color_themes, ColorTheme};
 
-use crate::data::singleton::APP_WINDOW;
+use crate::data::singleton::{APP_WINDOW, LOADING_WINDOW};
 use crate::logic::handler::*;
 
 mod component;
@@ -21,9 +21,11 @@ fn main() {
         let wind = window.get_window();
         wind.make_resizable(true);
 
+        let mut loading = LOADING_WINDOW.lock().unwrap();
+        loading.pin(app::screen_size());
+        loading.get().show();
 
-
-        wind.show();
+        // wind.show();
     }
 
     handle_event(&app);
