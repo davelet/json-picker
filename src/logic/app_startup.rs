@@ -139,3 +139,7 @@ pub(crate) fn load_snapshot() -> Option<String> {
     }
     None
 }
+
+pub(crate) fn clear() {
+    output(DocumentMut::from_str("").unwrap())
+}

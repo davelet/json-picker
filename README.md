@@ -5,6 +5,7 @@
 
  # TODO
  - settings
+ - menus and keymap
  - alert & tips
 
 # Use

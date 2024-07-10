@@ -1,12 +1,16 @@
+#[cfg(not(debug_assertions))]
 use std::env;
-use fltk::{prelude::{GroupExt, WidgetExt}, window::Window};
-use fltk::enums::FrameType;
+
+use fltk::{app, dialog, menu, prelude::{GroupExt, WidgetExt}, window::Window};
+use fltk::enums::{FrameType, Shortcut};
 use fltk::frame::Frame;
-use fltk::image::{Image, PngImage};
-use fltk::prelude::{ImageExt, WindowExt};
+use fltk::image::PngImage;
+use fltk::menu::SysMenuBar;
+use fltk::prelude::{ImageExt, MenuExt, WindowExt};
 
 use crate::data::constants::{APP_NAME, DEFAULT_HEIGHT, DEFAULT_WIDTH, MIN_HEIGHT, MIN_WIDTH};
 use crate::data::singleton::WHOLE_VIEW;
+use crate::logic::app_startup;
 
 pub(crate) struct AppWindow {
     window: Window,
@@ -19,6 +23,10 @@ impl AppWindow {
             .with_label(APP_NAME);
         wind.size_range(MIN_WIDTH, MIN_HEIGHT, 0, 0);
 
+        let mut m = SysMenuBar::default();
+        m.clear();
+        init_menu(&mut m);
+
         let whole_view = WHOLE_VIEW.lock().unwrap();
         wind.add(&*whole_view.get_panel());
         wind.end();
@@ -28,6 +36,32 @@ impl AppWindow {
     pub(crate) fn get_window(&mut self) -> &mut Window {
         &mut self.window
     }
+}
+
+fn init_menu(m: &mut SysMenuBar) {
+    m.add(
+        "&App/Reset",
+        Shortcut::None,
+        menu::MenuFlag::Normal,
+        |a| {
+            let txt = "reset? This will let the app out of box and shut it down. You have to restart it!";
+            let r = dialog::choice2_default(txt, "GiveUp", "No", "Yes");
+            if let Some(2) = r {
+                app_startup::clear();
+                app::quit();
+            }
+        },
+    );
+    m.add(
+        "&App/Config",
+        Shortcut::Meta | ',',
+        menu::MenuFlag::Normal,
+        |_| {
+            let mut config_window = Window::default().with_size(400, 560);
+            config_window.make_modal(true);
+            config_window.show();
+        },
+    );
 }
 
 pub(crate) struct StartupWindow {
