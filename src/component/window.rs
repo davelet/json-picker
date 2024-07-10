@@ -1,3 +1,4 @@
+use std::env;
 use fltk::{prelude::{GroupExt, WidgetExt}, window::Window};
 use fltk::enums::FrameType;
 use fltk::frame::Frame;
@@ -43,9 +44,27 @@ impl StartupWindow {
         let scale = 0.7;
         let mut frame = Frame::default().with_size((width as f64 * scale) as i32, (height as f64 * scale) as i32).center_of(&window);
         frame.set_frame(FrameType::EngravedBox);
-        let mut image = PngImage::load("assets/icon.png").unwrap();
-        image.scale(200, 200, true, true);
-        frame.set_image(Some(image));
+        let mut png = None;
+        #[cfg(debug_assertions)]
+        if let Ok(mut icon) = PngImage::load("assets/icon.png") {
+            icon.scale(200, 200, true, true);
+            png = Some(icon);
+        }
+        #[cfg(not(debug_assertions))] //after release
+        if let Ok(exe) = env::current_exe() {
+            let resources_path = exe.parent().expect("Failed to get parent directory")
+                .parent().expect("Failed to get parent directory2")
+                .join("Resources")
+                .join("assets")
+                .join("icon.png");
+            let app_png = PngImage::load(resources_path);
+            if let Ok(mut icon) = app_png {
+                icon.scale(200, 200, true, true);
+                png = Some(icon);
+            }
+        }
+
+        frame.set_image(png);
         window.end();
         window.set_border(false);
 

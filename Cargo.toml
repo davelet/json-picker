@@ -1,6 +1,6 @@
 [package]
 name = "json-hand"
-version = "0.0.5"
+version = "0.1.0-hotfix"
 edition = "2021"
 description = "An applicaton to pick part field from a whole json"
 
@@ -28,3 +28,4 @@ bundle_identifier = "json.hand.learn.self.davelet"
 bundle_name = "JSON HAND"
 application_category = "public.app-category.developer-tools"
 icon = ["assets/icon.png"]
+resources = ["assets"]
