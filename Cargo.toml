@@ -28,3 +28,4 @@ bundle_identifier = "json.hand.learn.self.davelet"
 bundle_name = "JSON HAND"
 application_category = "public.app-category.developer-tools"
 icon = ["assets/icon.png"]
+resources = ["assets"]
