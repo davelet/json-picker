@@ -175,6 +175,9 @@ fn listen_on_action() {
         let mut btns = ACTION_BTNS.lock().unwrap();
         let parse_btn = &mut btns[0];
         parse_btn.set_callback(|_| {
+            let mut input = JSON_INPUT_BOX.lock().unwrap();
+            let _ = input.take_focus();
+
             let mut bind = APP_WINDOW.lock().unwrap();
             let w = bind.get_window();
             w.redraw(); // this is for Tree view to display tree; without `redraw`, the tree wouldn't show. why?
