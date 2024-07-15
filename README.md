@@ -4,7 +4,6 @@
  very part of the json value.
 
  # TODO
- - settings
  - alert & tips
 
 # Use

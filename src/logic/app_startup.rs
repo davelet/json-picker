@@ -7,7 +7,7 @@ use std::cell::RefCell;
 use toml_edit::Item::Table as ItemTable;
 use toml_edit::{value, DocumentMut, Item, Table};
 
-use crate::data::constants::{SYS_PARAM_IN_THREAD_LOCAL_KEY, SYS_PARAM_LOCATION_H, SYS_PARAM_LOCATION_W, SYS_PARAM_LOCATION_X, SYS_PARAM_LOCATION_Y, SYS_PARAM_SNAPSHOT_JSON, SYSTEM_PARAM_FILE_DIR, SYSTEM_PARAM_FILE_PATH, SYSTEM_PARAM_LOCATION_KEY, SYSTEM_PARAM_SNAPSHOT_KEY};
+use crate::data::constants::{SYS_PARAM_IN_THREAD_LOCAL_KEY, SYS_PARAM_LOCATION_H, SYS_PARAM_LOCATION_W, SYS_PARAM_LOCATION_X, SYS_PARAM_LOCATION_Y, SYS_PARAM_SNAPSHOT_JSON, APP_PARAM_FILE_DIR, SYSTEM_PARAM_FILE_PATH, SYSTEM_PARAM_LOCATION_KEY, SYSTEM_PARAM_SNAPSHOT_KEY};
 use crate::data::singleton::HOME_DIR;
 
 thread_local! {
@@ -27,7 +27,7 @@ fn input() -> Result<DocumentMut, String> {
     if !init {
         return Ok(doc);
     }
-    let file_path = format!("{}{}{}", home_dir, SYSTEM_PARAM_FILE_DIR, SYSTEM_PARAM_FILE_PATH);
+    let file_path = format!("{}{}{}", home_dir, APP_PARAM_FILE_DIR, SYSTEM_PARAM_FILE_PATH);
     let path = Path::new(&file_path);
 
     let mut file = match File::open(&path) {
@@ -50,10 +50,10 @@ fn input() -> Result<DocumentMut, String> {
 /// write to toml file
 fn output(toml: DocumentMut) {
     let str = toml.to_string();
-    let file_path = format!("{}{}{}", HOME_DIR.lock().unwrap().get_mut(), SYSTEM_PARAM_FILE_DIR, SYSTEM_PARAM_FILE_PATH);
+    let file_path = format!("{}{}{}", HOME_DIR.lock().unwrap().get_mut(), APP_PARAM_FILE_DIR, SYSTEM_PARAM_FILE_PATH);
     let wr = fs::write(file_path, str.clone());
     if let Err(_e) = wr {
-        let _ = create_dir_all(format!("{}{}", HOME_DIR.lock().unwrap().get_mut(), SYSTEM_PARAM_FILE_DIR));
+        let _ = create_dir_all(format!("{}{}", HOME_DIR.lock().unwrap().get_mut(), APP_PARAM_FILE_DIR));
         let f = File::create(SYSTEM_PARAM_FILE_PATH);
         if let Ok(mut f) = f {
             let _r = f.write_all(str.as_bytes());
@@ -138,4 +138,8 @@ pub(crate) fn load_snapshot() -> Option<String> {
         }
     }
     None
+}
+
+pub(crate) fn clear() {
+    output(DocumentMut::from_str("").unwrap())
 }

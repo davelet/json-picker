@@ -10,6 +10,7 @@ use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WA
 use crate::data::notify_enum::{AppParam, ComputeResult, ComputeStatus, NotifyType};
 use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, HOME_DIR, JSON_INPUT_BOX, JSON_SAVE_TASK, LOAD_LOCATION_TASK, LOADING_WINDOW, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
+use crate::logic::app_settings::get_limit;
 use crate::logic::json_handle;
 use crate::logic::workers::startup_tasks::StartupTask;
 use crate::logic::workers::ui_tasks::UiTask;
@@ -60,7 +61,8 @@ fn handle_json_input() {
                     return true;
                 }
                 let s = CHANNEL.0.clone();
-                if text.len() > JSON_SIZE_LIMIT { // move to `settings`
+                let limit = get_limit();
+                if text.len() > limit as usize { // move to `settings`
                     s.send(NotifyType::Result(ComputeResult::Error(JSON_SIZE_WARN.to_string())));
                     return true;
                 }
@@ -173,6 +175,9 @@ fn listen_on_action() {
         let mut btns = ACTION_BTNS.lock().unwrap();
         let parse_btn = &mut btns[0];
         parse_btn.set_callback(|_| {
+            let mut input = JSON_INPUT_BOX.lock().unwrap();
+            let _ = input.take_focus();
+
             let mut bind = APP_WINDOW.lock().unwrap();
             let w = bind.get_window();
             w.redraw(); // this is for Tree view to display tree; without `redraw`, the tree wouldn't show. why?

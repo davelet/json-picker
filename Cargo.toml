@@ -1,6 +1,6 @@
 [package]
 name = "json-hand"
-version = "0.1.0-hotfix"
+version = "0.2.0"
 edition = "2021"
 description = "An applicaton to pick part field from a whole json"
 
