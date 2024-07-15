@@ -1,9 +1,8 @@
 use fltk::{enums::Color, group::{Pack, PackType}, prelude::{GroupExt, WidgetBase, WidgetExt}};
 use fltk::prelude::DisplayExt;
 use fltk::text::{TextBuffer, TextDisplay, TextEditor};
-use fltk::tree::Tree;
 
-use crate::data::constants::{COLUMN_COUNT, SEARCH_BAR_HEIGHT};
+use crate::data::constants::COLUMN_COUNT;
 use crate::data::singleton::{JSON_INPUT_BOX, RESUTL_VIEW, TREE_VIEW};
 
 pub(crate) struct ContentPanel {

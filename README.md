@@ -4,8 +4,6 @@
  very part of the json value.
 
  # TODO
- - settings
- - menus and keymap
  - alert & tips
 
 # Use
