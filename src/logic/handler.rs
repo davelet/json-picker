@@ -274,4 +274,12 @@ fn listen_on_action() {
             CHANNEL.0.clone().send(NotifyType::SearchTree(pattern.into()));
         });
     }
+    {
+        let mut search_input = TREE_SEARCH_BOX.lock().unwrap();
+        search_input.set_trigger(fltk::enums::CallbackTrigger::EnterKey);
+        search_input.set_callback(|_| {
+            let mut do_search_btn = TREE_SEARCH_BTN.lock().unwrap();
+            do_search_btn.do_callback();
+        });
+    }
 }
