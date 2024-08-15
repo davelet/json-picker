@@ -1,12 +1,12 @@
 use std::{env, thread};
 
 use clipboard::{ClipboardContext, ClipboardProvider};
-use fltk::app::App;
-use fltk::enums::Event;
+use fltk::app::{self, event_key, event_state, App};
+use fltk::enums::{Event, EventState, Key, Shortcut};
 use fltk::prelude::{DisplayExt, InputExt, WidgetBase, WidgetExt};
 use serde_json::Value;
 
-use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_LIMIT, JSON_SIZE_WARN};
+use crate::data::constants::{ACTION_BUTTON_HEIGHT, JSON_SIZE_WARN};
 use crate::data::notify_enum::{AppParam, ComputeResult, ComputeStatus, NotifyType};
 use crate::data::singleton::{ACTION_BTNS, APP_WINDOW, CHANNEL, COMPUTE_TASK, FOOT_SHOW, GLOBAL_JSON, HOME_DIR, JSON_INPUT_BOX, JSON_SAVE_TASK, LOAD_LOCATION_TASK, LOADING_WINDOW, LOCATION_TASK, RESUTL_VIEW, STATUS_TASK, TREE_MAIN, TREE_SEARCH_BAR, TREE_SEARCH_BOX, TREE_SEARCH_BTN, TREE_VIEW, WHOLE_VIEW};
 use crate::data::task_bo::{AppWindowLocationTaskParam, HaltWaitingStatusTaskParam};
@@ -16,18 +16,15 @@ use crate::logic::workers::startup_tasks::StartupTask;
 use crate::logic::workers::ui_tasks::UiTask;
 
 pub(crate) fn handle_event(app: &App) {
-    window_resize();
+    on_window_action();
     handle_json_input();
     listen_on_action();
     make_ready();
 
-    listen_on_events(&app);
+    listen_on_events(app);
 }
 
 fn make_ready() {
-    // app::add_timeout3(START_TIMEOUT, |_| {
-    //     CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Ready));
-    // });
     if let Ok(home) = env::var("HOME") {
         let user_home = HOME_DIR.lock().unwrap();
         user_home.set(home);
@@ -36,7 +33,7 @@ fn make_ready() {
     CHANNEL.0.clone().send(NotifyType::FinishLoading);
 }
 
-fn window_resize() {
+fn on_window_action() {
     let mut whole_view = WHOLE_VIEW.lock().unwrap();
     let mut binding = APP_WINDOW.lock().unwrap();
     let window = binding.get_window();
@@ -45,6 +42,18 @@ fn window_resize() {
             whole_view.resize_with_auto_detect_size();
             let (x, y, w, h) = (w.x(), w.y(), w.w(), w.h());
             CHANNEL.0.clone().send(NotifyType::StoreParams(AppParam::WindowSize(x, y, w, h)));
+            true
+        }
+        Event::Shortcut => {
+            match event_state() {
+                EventState::None if event_key() == Key::Escape => {app::quit()}
+                EventState::Meta if event_key() == Key::from_i32(102) => { // 102 is the num of F key
+                    let mut btns = ACTION_BTNS.lock().unwrap();
+                    let search_btn = &mut btns[1];
+                    search_btn.do_callback();
+                }
+                _ => {}
+            }
             true
         }
         _ => false,
@@ -201,6 +210,8 @@ fn listen_on_action() {
             } else {
                 tree.set_size(w, h - ACTION_BUTTON_HEIGHT);
                 bar.show();
+                let mut inbox = TREE_SEARCH_BOX.lock().unwrap();
+                let _ = inbox.take_focus();
             }
             let mut bind = APP_WINDOW.lock().unwrap();
             let win = bind.get_window();

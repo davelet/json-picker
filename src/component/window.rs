@@ -144,7 +144,7 @@ impl StartupWindow {
             icon.scale(200, 200, true, true);
             png = Some(icon);
         }
-        #[cfg(not(debug_assertions))] //after release
+        #[cfg(not(debug_assertions))] // for release
         if let Ok(exe) = env::current_exe() {
             let resources_path = exe.parent().expect("Failed to get parent directory")
                 .parent().expect("Failed to get parent directory2")
@@ -170,7 +170,7 @@ impl StartupWindow {
     }
 
     pub(crate) fn pin(&mut self, (x, y): (f64, f64)) {
-        let mut window = &mut self.window;
+        let window = &mut self.window;
         let w = window.w();
         let h = window.h();
         let x = x as i32 / 2 - w / 2;
