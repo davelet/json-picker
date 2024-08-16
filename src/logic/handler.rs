@@ -47,10 +47,20 @@ fn on_window_action() {
         Event::Shortcut => {
             match event_state() {
                 EventState::None if event_key() == Key::Escape => {app::quit()}
-                EventState::Meta if event_key() == Key::from_i32(102) => { // 102 is the num of F key
-                    let mut btns = ACTION_BTNS.lock().unwrap();
-                    let search_btn = &mut btns[1];
-                    search_btn.do_callback();
+                EventState::Meta => {
+                    match event_key().bits() {
+                        99 => { // 99 is for 'c'
+                            let mut btns = ACTION_BTNS.lock().unwrap();
+                            let search_btn = &mut btns[2];
+                            search_btn.do_callback();
+                        }
+                        102 => {  // 102 is the num of F key, same as ascii key
+                            let mut btns = ACTION_BTNS.lock().unwrap();
+                            let search_btn = &mut btns[1];
+                            search_btn.do_callback();
+                        }
+                        _ => {}
+                    }
                 }
                 _ => {}
             }
@@ -94,6 +104,25 @@ fn handle_json_input() {
                     }
                 }
                 s.send(NotifyType::Status(ComputeStatus::Ready));
+                true
+            }
+            Event::Shortcut => {
+                match event_state() {
+                    EventState::Meta => {
+                        match event_key().bits() {
+                            97 | 99 | 118 | 120 | 122 | 113 => { // a c v x z q
+                                false
+                            }
+                            _ => {
+                                true
+                            }
+                        }
+                    }
+                    _ => {true}
+                }
+            }
+            Event::Focus => {
+                CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Editing));
                 true
             }
             _ => false,
@@ -172,6 +201,8 @@ fn listen_on_events(app: &App) {
                 NotifyType::FinishLoading => {
                     APP_WINDOW.lock().unwrap().get_window().show();
                     LOADING_WINDOW.lock().unwrap().get().hide();
+                    let mut input = JSON_INPUT_BOX.lock().unwrap();
+                    let _ = input.take_focus();
                 }
                 _ => {}
             }
@@ -184,9 +215,6 @@ fn listen_on_action() {
         let mut btns = ACTION_BTNS.lock().unwrap();
         let parse_btn = &mut btns[0];
         parse_btn.set_callback(|_| {
-            let mut input = JSON_INPUT_BOX.lock().unwrap();
-            let _ = input.take_focus();
-
             let mut bind = APP_WINDOW.lock().unwrap();
             let w = bind.get_window();
             w.redraw(); // this is for Tree view to display tree; without `redraw`, the tree wouldn't show. why?

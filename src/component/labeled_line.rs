@@ -69,15 +69,15 @@ impl LabeledLine {
         self.child(1).set_size(parent_w / COLUMN_COUNT, self.height);
         self.child(2).set_size(parent_w / COLUMN_COUNT, self.height);
     }
-    
+
     pub(crate) fn set_status(&self, st: &ComputeStatus) {
         self.child(0).set_label(st.as_ref())
     }
-    
+
     pub(crate) fn set_result(&self, result: &ComputeResult) {
         let result = match result {
-            ComputeResult::Normal => {ComputeResult::Normal.as_ref()}
-            ComputeResult::Error(e) => e
+            ComputeResult::Error(e) => { e }
+            r => { r.as_ref() }
         };
         self.child(1).set_label(result);
     }

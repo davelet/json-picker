@@ -30,6 +30,7 @@ pub(crate) enum ComputeStatus {
 #[derive(Clone, AsRefStr)]
 pub(crate) enum ComputeResult {
     Normal,
+    Editing,
     Error(String),
 }
 
