@@ -16,7 +16,6 @@ pub(crate) const ACTION_BUTTON_HEIGHT: i32 = 30;
 pub(crate) const ACTION_BUTTON_LABELS: [&str; 4] = ["Parse Input", "Show/Hide Search Bar", "Copy Result", "Clear Input and Result"];
 pub(crate) const CONTENT_HEIGHT: i32 = DEFAULT_HEIGHT - HEADER_HEIGHT - FOOTER_HEIGHT - ACTION_BUTTON_HEIGHT;
 
-pub(crate) const START_TIMEOUT: f64 = 0.5;
 pub(crate) const JSON_SIZE_LIMIT: usize = 10_000_000;
 pub(crate) const JSON_SIZE_WARN: &str = "input too long";
 pub(crate) const TREE_LABEL_SPLITTER: &str = ":";

@@ -64,5 +64,5 @@ pub(crate) fn parse_path_chain(item: &TreeItem) -> Stack<String> {
         temp = Some(&next);
     }
 
-    return stack;
+    stack
 }

@@ -2,7 +2,7 @@ use std::{env, thread};
 
 use clipboard::{ClipboardContext, ClipboardProvider};
 use fltk::app::{self, event_key, event_state, App};
-use fltk::enums::{Event, EventState, Key, Shortcut};
+use fltk::enums::{Event, EventState, Key};
 use fltk::prelude::{DisplayExt, InputExt, WidgetBase, WidgetExt};
 use serde_json::Value;
 
@@ -211,17 +211,26 @@ fn listen_on_events(app: &App) {
 }
 
 fn listen_on_action() {
-    {
-        let mut btns = ACTION_BTNS.lock().unwrap();
-        let parse_btn = &mut btns[0];
-        parse_btn.set_callback(|_| {
-            let mut bind = APP_WINDOW.lock().unwrap();
-            let w = bind.get_window();
-            w.redraw(); // this is for Tree view to display tree; without `redraw`, the tree wouldn't show. why?
-        });
-    }
-    {
-        let mut btns = ACTION_BTNS.lock().unwrap();
+    setup_parse_button();
+    setup_search_button();
+    setup_copy_button();
+    setup_clear_button();
+    setup_search_tree_button();
+    setup_search_input();
+}
+
+fn setup_parse_button() {
+    let mut btns = ACTION_BTNS.lock().unwrap();
+    let parse_btn = &mut btns[0];
+    parse_btn.set_callback(|_| {
+        let mut bind = APP_WINDOW.lock().unwrap();
+        let w = bind.get_window();
+        w.redraw();
+    });
+}
+
+fn setup_search_button() {
+    let mut btns = ACTION_BTNS.lock().unwrap();
         let search_btn = &mut btns[1];
         search_btn.set_callback(|_| {
             let mut bar = TREE_SEARCH_BAR.lock().unwrap().get_bar();
@@ -245,9 +254,10 @@ fn listen_on_action() {
             let win = bind.get_window();
             win.redraw(); // save as above...why
         })
-    }
-    {
-        let mut btns = ACTION_BTNS.lock().unwrap();
+}
+
+fn setup_copy_button() {
+    let mut btns = ACTION_BTNS.lock().unwrap();
         let copy_btn = &mut btns[2];
         copy_btn.set_callback(|_| {
             let bind = RESUTL_VIEW.lock().unwrap();
@@ -268,10 +278,11 @@ fn listen_on_action() {
             } else {
                 CHANNEL.0.clone().send(NotifyType::Result(ComputeResult::Error(String::from("copied to clipboard"))));
             }
-        });
-    }
-    {
-        let mut btns = ACTION_BTNS.lock().unwrap();
+        })
+}
+
+fn setup_clear_button() {
+    let mut btns = ACTION_BTNS.lock().unwrap();
         let clear_btn = &mut btns[3];
         clear_btn.set_callback(|_| {
             {
@@ -300,10 +311,11 @@ fn listen_on_action() {
                 let guard = GLOBAL_JSON.lock().unwrap();
                 (*guard).set("".into());
             }
-        });
-    }
-    {
-        let mut do_search_btn = TREE_SEARCH_BTN.lock().unwrap();
+        })
+}
+
+fn setup_search_tree_button() {
+    let mut do_search_btn = TREE_SEARCH_BTN.lock().unwrap();
         do_search_btn.set_callback(|_| {
             let inbox = TREE_SEARCH_BOX.lock().unwrap();
             let binding = inbox.value();
@@ -311,14 +323,14 @@ fn listen_on_action() {
 
             CHANNEL.0.clone().send(NotifyType::Status(ComputeStatus::Computing));
             CHANNEL.0.clone().send(NotifyType::SearchTree(pattern.into()));
-        });
-    }
-    {
-        let mut search_input = TREE_SEARCH_BOX.lock().unwrap();
-        search_input.set_trigger(fltk::enums::CallbackTrigger::EnterKey);
-        search_input.set_callback(|_| {
-            let mut do_search_btn = TREE_SEARCH_BTN.lock().unwrap();
-            do_search_btn.do_callback();
-        });
-    }
+        })
+}
+
+fn setup_search_input() {
+    let mut search_input = TREE_SEARCH_BOX.lock().unwrap();
+    search_input.set_trigger(fltk::enums::CallbackTrigger::EnterKey);
+    search_input.set_callback(|_| {
+        let mut do_search_btn = TREE_SEARCH_BTN.lock().unwrap();
+        do_search_btn.do_callback();
+    });
 }

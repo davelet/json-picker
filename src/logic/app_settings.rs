@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 use toml_edit::{DocumentMut, value};
 
-use crate::data::constants::{APP_PARAM_FILE_DIR, APP_SETTING_FILE_PATH, JSON_SIZE_LIMIT, SYS_SETTINGS_LENGTH_LIMIT, SYSTEM_PARAM_FILE_PATH};
+use crate::data::constants::{APP_PARAM_FILE_DIR, APP_SETTING_FILE_PATH, JSON_SIZE_LIMIT, SYS_SETTINGS_LENGTH_LIMIT};
 use crate::data::singleton::HOME_DIR;
 
 /// read from toml

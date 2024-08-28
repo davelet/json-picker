@@ -1,4 +1,4 @@
-use std::{fs, thread};
+use std::fs;
 use std::fs::{create_dir_all, File};
 use std::io::{Read, Write};
 use std::path::Path;
@@ -22,7 +22,7 @@ fn input() -> Result<DocumentMut, String> {
         return Err("home dir access error".into());
     }
 
-    let doc = LOCAL.with(|mut c| c.borrow().clone());
+    let doc = LOCAL.with(|c| c.borrow().clone());
     let init = doc.contains_key(SYS_PARAM_IN_THREAD_LOCAL_KEY);
     if !init {
         return Ok(doc);
@@ -44,7 +44,7 @@ fn input() -> Result<DocumentMut, String> {
     LOCAL.with(|c| {
         *c.borrow_mut() = doc
     });
-    Ok(LOCAL.with(|mut c| c.borrow().clone()))
+    Ok(LOCAL.with(|c| c.borrow().clone()))
 }
 
 /// write to toml file
